@@ -20,7 +20,7 @@
  *
  * @category    design
  * @package     default_default
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -42,7 +42,7 @@ optionTemplate = '<div id="<?php echo $this->getFieldId() ?>_{{index}}"  class="
                 '<th class="opt-title"><?php echo Mage::helper('bundle')->__('Store View Title') ?>  <span class="required">*</span></th>' +
                 <?php endif; ?>
                 '<th class="opt-type"><?php echo Mage::helper('bundle')->__('Input Type') ?></th>' +
-                '<th class="opt-req"><?php echo Mage::helper('bundle')->__('Is Required') ?></th>' +
+                '<th class="opt-req"><?php echo $this->jsQuoteEscape(Mage::helper('bundle')->__('Is Required')) ?></th>' +
                 '<th class="opt-order"><?php echo Mage::helper('bundle')->__('Position') ?></th>' +
                 '<th>&nbsp;</th>' +
             '</tr>' +
@@ -212,6 +212,7 @@ bOption = new Bundle.Option(optionTemplate);
 optionIndex = bOption.add(<?php echo $_option->toJson() ?>);
 <?php if ($_option->getSelections()):?>
     <?php foreach ($_option->getSelections() as $_selection): ?>
+    <?php $_selection->setName($this->escapeHtml($_selection->getName())); ?>
 bSelection.addRow(optionIndex, <?php echo $_selection->toJson() ?>);
     <?php endforeach; ?>
 <?php endif; ?>

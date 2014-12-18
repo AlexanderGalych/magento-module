@@ -19,7 +19,7 @@
  *
  * @category    design
  * @package     base_default
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 var Checkout = Class.create();
@@ -38,17 +38,37 @@ Checkout.prototype = {
         this.loadWaiting = false;
         this.steps = ['login', 'billing', 'shipping', 'shipping_method', 'payment', 'review'];
 
-        //this.onSetMethod = this.nextStep.bindAsEventListener(this);
+        this.accordion.sections.each(function(section) {
+            Event.observe($(section).down('.step-title'), 'click', this._onSectionClick.bindAsEventListener(this));
+        }.bind(this));
 
         this.accordion.disallowAccessToNextSections = true;
+    },
+
+    /**
+     * Section header click handler
+     *
+     * @param event
+     */
+    _onSectionClick: function(event) {
+        var section = $(Event.element(event).up().up());
+        if (section.hasClassName('allow')) {
+            Event.stop(event);
+            this.gotoSection(section.readAttribute('id').replace('opc-', ''));
+            return false;
+        }
     },
 
     ajaxFailure: function(){
         location.href = this.failureUrl;
     },
 
-    reloadProgressBlock: function(){
-        var updater = new Ajax.Updater('checkout-progress-wrapper', this.progressUrl, {method: 'get', onFailure: this.ajaxFailure.bind(this)});
+    reloadProgressBlock: function(toStep) {
+        var updater = new Ajax.Updater('checkout-progress-wrapper', this.progressUrl, {
+            method: 'get',
+            onFailure: this.ajaxFailure.bind(this),
+            parameters: toStep ? {toStep: toStep} : null
+        });
     },
 
     reloadReviewBlock: function(){
@@ -90,9 +110,10 @@ Checkout.prototype = {
 
     gotoSection: function(section)
     {
-        section = $('opc-'+section);
-        section.addClassName('allow');
-        this.accordion.openSection(section);
+        var sectionElement = $('opc-'+section);
+        sectionElement.addClassName('allow');
+        this.accordion.openSection('opc-'+section);
+        this.reloadProgressBlock(section);
     },
 
     setMethod: function(){
@@ -115,9 +136,10 @@ Checkout.prototype = {
             this.gotoSection('billing');
         }
         else{
-            alert(Translator.translate('Please choose to register or to checkout as a guest'));
+            alert(Translator.translate('Please choose to register or to checkout as a guest').stripTags());
             return false;
         }
+        document.body.fire('login:setMethod', {method : this.method});
     },
 
     setBilling: function() {
@@ -134,7 +156,6 @@ Checkout.prototype = {
         }
 
         // this refreshes the checkout progress column
-        this.reloadProgressBlock();
 
 //        if ($('billing:use_for_shipping') && $('billing:use_for_shipping').checked){
 //            shipping.syncWithBilling();
@@ -151,21 +172,18 @@ Checkout.prototype = {
     },
 
     setShipping: function() {
-        this.reloadProgressBlock();
         //this.nextStep();
         this.gotoSection('shipping_method');
         //this.accordion.openNextSection(true);
     },
 
     setShippingMethod: function() {
-        this.reloadProgressBlock();
         //this.nextStep();
         this.gotoSection('payment');
         //this.accordion.openNextSection(true);
     },
 
     setPayment: function() {
-        this.reloadProgressBlock();
         //this.nextStep();
         this.gotoSection('review');
         //this.accordion.openNextSection(true);
@@ -198,7 +216,6 @@ Checkout.prototype = {
         }
 
         if (response.goto_section) {
-            this.reloadProgressBlock();
             this.gotoSection(response.goto_section);
             return true;
         }
@@ -308,6 +325,7 @@ Billing.prototype = {
 
     resetLoadWaiting: function(transport){
         checkout.setLoadWaiting(false);
+        document.body.fire('billing-request:completed', {transport: transport});
     },
 
     /**
@@ -527,7 +545,7 @@ ShippingMethod.prototype = {
     validate: function() {
         var methods = document.getElementsByName('shipping_method');
         if (methods.length==0) {
-            alert(Translator.translate('Your order cannot be completed at this time as there is no shipping methods available for it. Please make neccessary changes in your shipping address.'));
+            alert(Translator.translate('Your order cannot be completed at this time as there is no shipping methods available for it. Please make necessary changes in your shipping address.').stripTags());
             return false;
         }
 
@@ -540,7 +558,7 @@ ShippingMethod.prototype = {
                 return true;
             }
         }
-        alert(Translator.translate('Please specify shipping method.'));
+        alert(Translator.translate('Please specify shipping method.').stripTags());
         return false;
     },
 
@@ -583,7 +601,6 @@ ShippingMethod.prototype = {
 
         if (response.update_section) {
             $('checkout-'+response.update_section.name+'-load').update(response.update_section.html);
-            response.update_section.html.evalScripts();
         }
 
         payment.initWhatIsCvvListeners();
@@ -660,21 +677,33 @@ Payment.prototype = {
 
     switchMethod: function(method){
         if (this.currentMethod && $('payment_form_'+this.currentMethod)) {
-            var form = $('payment_form_'+this.currentMethod);
-            form.style.display = 'none';
-            var elements = form.select('input', 'select', 'textarea');
-            for (var i=0; i<elements.length; i++) elements[i].disabled = true;
+            this.changeVisible(this.currentMethod, true);
+            $('payment_form_'+this.currentMethod).fire('payment-method:switched-off', {method_code : this.currentMethod});
         }
         if ($('payment_form_'+method)){
-            var form = $('payment_form_'+method);
-            form.style.display = '';
-            var elements = form.select('input', 'select', 'textarea');
-            for (var i=0; i<elements.length; i++) elements[i].disabled = false;
+            this.changeVisible(method, false);
+            $('payment_form_'+method).fire('payment-method:switched', {method_code : method});
         } else {
             //Event fix for payment methods without form like "Check / Money order"
             document.body.fire('payment-method:switched', {method_code : method});
         }
+        if (method) {
+            this.lastUsedMethod = method;
+        }
         this.currentMethod = method;
+    },
+
+    changeVisible: function(method, mode) {
+        var block = 'payment_form_' + method;
+        [block + '_before', block, block + '_after'].each(function(el) {
+            element = $(el);
+            if (element) {
+                element.style.display = (mode) ? 'none' : '';
+                element.select('input', 'select', 'textarea', 'button').each(function(field) {
+                    field.disabled = mode;
+                });
+            }
+        });
     },
 
     addBeforeValidateFunction : function(code, func) {
@@ -703,7 +732,7 @@ Payment.prototype = {
         }
         var methods = document.getElementsByName('payment[method]');
         if (methods.length==0) {
-            alert(Translator.translate('Your order cannot be completed at this time as there is no payment methods available for it.'));
+            alert(Translator.translate('Your order cannot be completed at this time as there is no payment methods available for it.').stripTags());
             return false;
         }
         for (var i=0; i<methods.length; i++) {
@@ -715,7 +744,7 @@ Payment.prototype = {
         if (result) {
             return true;
         }
-        alert(Translator.translate('Please specify payment method.'));
+        alert(Translator.translate('Please specify payment method.').stripTags());
         return false;
     },
 
@@ -791,7 +820,7 @@ Payment.prototype = {
 
         //checkout.setPayment();
     },
- 
+
     initWhatIsCvvListeners: function(){
         $$('.cvv-what-is-this').each(function(element){
             Event.observe(element, 'click', toggleToolTip);
@@ -842,6 +871,7 @@ Review.prototype = {
                 response = {};
             }
             if (response.redirect) {
+                this.isSuccess = true;
                 location.href = response.redirect;
                 return;
             }
@@ -854,17 +884,17 @@ Review.prototype = {
                 if (typeof(msg)=='object') {
                     msg = msg.join("\n");
                 }
-                alert(msg);
+                if (msg) {
+                    alert(msg);
+                }
             }
 
             if (response.update_section) {
                 $('checkout-'+response.update_section.name+'-load').update(response.update_section.html);
-                response.update_section.html.evalScripts();
             }
 
             if (response.goto_section) {
                 checkout.gotoSection(response.goto_section);
-                checkout.reloadProgressBlock();
             }
         }
     },

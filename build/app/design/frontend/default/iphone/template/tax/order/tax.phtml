@@ -20,14 +20,14 @@
  *
  * @category    design
  * @package     default_iphone
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
 <?php
     $_order  = $this->getOrder();
     $_source = $this->getSource();
-    $_fullInfo = $_source->getFullTaxInfo();
+    $_fullInfo = $_order->getFullTaxInfo();
     global $taxIter; $taxIter++;
 ?>
 <?php  ?>
@@ -45,9 +45,9 @@
         <?php foreach ($rates as $rate): ?>
         <tr class="summary-details-<?php echo $taxIter; ?> summary-details<?php if ($isTop): echo ' summary-details-first'; endif; ?>"<?php if (!$this->getIsPlaneMode()):?> style="display:none;"<?php endif;?>>
             <td <?php echo $this->getLabelProperties()?>>
-                <?php echo $rate['title']; ?>
-                <?php if ($rate['percent']): ?>
-                    (<?php echo $rate['percent']; ?>%)
+                <?php echo $this->escapeHtml($rate['title']); ?>
+                <?php if (!is_null($rate['percent'])): ?>
+                    (<?php echo (float)$rate['percent']; ?>%)
                 <?php endif; ?>
                 <br />
             </td>
@@ -70,7 +70,7 @@
 <?php else: ?>
 <tr>
 <?php endif; ?>
-    <td <?php echo $this->getLabelProperties()?>>
+    <td>
         <?php if ($this->displayFullSummary()): ?>
             <div class="summary-collapse"><?php echo $this->__('Tax'); ?></div>
         <?php else: ?>

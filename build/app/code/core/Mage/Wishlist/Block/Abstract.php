@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_Wishlist
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,16 +37,40 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
     /**
      * Wishlist Product Items Collection
      *
-     * @var Mage_Wishlist_Model_Mysql4_Product_Collection
+     * @var Mage_Wishlist_Model_Resource_Item_Collection
      */
     protected $_collection;
 
     /**
-     * Wishlist Model
+     * Store wishlist Model
      *
      * @var Mage_Wishlist_Model_Wishlist
      */
     protected $_wishlist;
+
+    /**
+     * List of block settings to render prices for different product types
+     *
+     * @var array
+     */
+    protected $_itemPriceBlockTypes = array();
+
+    /**
+     * List of block instances to render prices for different product types
+     *
+     * @var array
+     */
+    protected $_cachedItemPriceBlocks = array();
+
+    /**
+     * Internal constructor, that is called from real constructor
+     *
+     */
+    protected function _construct()
+    {
+        parent::_construct();
+        $this->addItemPriceBlockType('default', 'wishlist/render_item_price', 'wishlist/render/item/price.phtml');
+    }
 
     /**
      * Retrieve Wishlist Data Helper
@@ -75,27 +99,13 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
      */
     protected function _getWishlist()
     {
-        if (is_null($this->_wishlist)) {
-            if (Mage::registry('shared_wishlist')) {
-                $this->_wishlist = Mage::registry('shared_wishlist');
-            }
-            elseif (Mage::registry('wishlist')) {
-                $this->_wishlist = Mage::registry('wishlist');
-            }
-            else {
-                $this->_wishlist = Mage::getModel('wishlist/wishlist');
-                if ($this->_getCustomerSession()->isLoggedIn()) {
-                    $this->_wishlist->loadByCustomer($this->_getCustomerSession()->getCustomer());
-                }
-            }
-        }
-        return $this->_wishlist;
+        return $this->_getHelper()->getWishlist();
     }
 
     /**
      * Prepare additional conditions to collection
      *
-     * @param Mage_Wishlist_Model_Mysql4_Product_Collection $collection
+     * @param Mage_Wishlist_Model_Resource_Item_Collection $collection
      * @return Mage_Wishlist_Block_Customer_Wishlist
      */
     protected function _prepareCollection($collection)
@@ -104,23 +114,24 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
     }
 
     /**
+     * Create wishlist item collection
+     *
+     * @return Mage_Wishlist_Model_Resource_Item_Collection
+     */
+    protected function _createWishlistItemCollection()
+    {
+        return $this->_getWishlist()->getItemCollection();
+    }
+
+    /**
      * Retrieve Wishlist Product Items collection
      *
-     * @return Mage_Wishlist_Model_Mysql4_Product_Collection
+     * @return Mage_Wishlist_Model_Resource_Item_Collection
      */
     public function getWishlistItems()
     {
         if (is_null($this->_collection)) {
-            $attributes = Mage::getSingleton('catalog/config')->getProductAttributes();
-            $this->_collection = $this->_getWishlist()
-                ->getProductCollection()
-                ->addAttributeToSelect($attributes)
-                ->addStoreFilter()
-                ->addUrlRewrite();
-
-            Mage::getSingleton('catalog/product_visibility')
-                ->addVisibleInSiteFilterToCollection($this->_collection);
-
+            $this->_collection = $this->_createWishlistItemCollection();
             $this->_prepareCollection($this->_collection);
         }
 
@@ -128,10 +139,20 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
     }
 
     /**
+     * Retrieve wishlist instance
+     *
+     * @return Mage_Wishlist_Model_Wishlist
+     */
+    public function getWishlistInstance()
+    {
+        return $this->_getWishlist();
+    }
+
+    /**
      * Back compatibility retrieve wishlist product items
      *
-     * @deprecated
-     * @return Mage_Wishlist_Model_Mysql4_Product_Collection
+     * @deprecated after 1.4.2.0
+     * @return Mage_Wishlist_Model_Mysql4_Item_Collection
      */
     public function getWishlist()
     {
@@ -141,23 +162,35 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
     /**
      * Retrieve URL for Removing item from wishlist
      *
-     * @param Mage_Catalog_Model_Product $item
+     * @param Mage_Catalog_Model_Product|Mage_Wishlist_Model_Item $item
+     *
      * @return string
      */
-    public function getItemRemoveUrl($product)
+    public function getItemRemoveUrl($item)
     {
-        return $this->_getHelper()->getRemoveUrl($product);
+        return $this->_getHelper()->getRemoveUrl($item);
     }
 
     /**
      * Retrieve Add Item to shopping cart URL
      *
-     * @param Mage_Catalog_Model_Product $product
+     * @param string|Mage_Catalog_Model_Product|Mage_Wishlist_Model_Item $item
      * @return string
      */
-    public function getItemAddToCartUrl($product)
+    public function getItemAddToCartUrl($item)
     {
-        return $this->_getHelper()->getAddToCartUrl($product);
+        return $this->_getHelper()->getAddToCartUrl($item);
+    }
+
+    /**
+     * Retrieve Add Item to shopping cart URL from shared wishlist
+     *
+     * @param string|Mage_Catalog_Model_Product|Mage_Wishlist_Model_Item $item
+     * @return string
+     */
+    public function getSharedItemAddToCartUrl($item)
+    {
+        return $this->_getHelper()->getSharedAddToCartUrl($item);
     }
 
     /**
@@ -171,6 +204,26 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
         return $this->_getHelper()->getAddUrl($product);
     }
 
+     /**
+     * Returns item configure url in wishlist
+     *
+     * @param Mage_Catalog_Model_Product|Mage_Wishlist_Model_Item $product
+     *
+     * @return string
+     */
+    public function getItemConfigureUrl($product)
+    {
+        if ($product instanceof Mage_Catalog_Model_Product) {
+            $id = $product->getWishlistItemId();
+        } else {
+            $id = $product->getId();
+        }
+        $params = array('id' => $id);
+
+        return $this->getUrl('wishlist/index/configure/', $params);
+    }
+
+
     /**
      * Retrieve Escaped Description for Wishlist Item
      *
@@ -179,8 +232,8 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
      */
     public function getEscapedDescription($item)
     {
-        if ($item->getWishlistItemDescription()) {
-            return $this->htmlEscape($item->getWishlistItemDescription());
+        if ($item->getDescription()) {
+            return $this->escapeHtml($item->getDescription());
         }
         return '&nbsp;';
     }
@@ -193,7 +246,7 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
      */
     public function hasDescription($item)
     {
-        return trim($item->getWishlistItemDescription()) != '';
+        return trim($item->getDescription()) != '';
     }
 
     /**
@@ -215,7 +268,7 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
     public function isSaleable()
     {
         foreach ($this->getWishlistItems() as $item) {
-            if ($item->isSaleable()) {
+            if ($item->getProduct()->isSaleable()) {
                 return true;
             }
         }
@@ -230,7 +283,22 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
      */
     public function getWishlistItemsCount()
     {
-        return $this->getWishlistItems()->count();
+        return $this->_getWishlist()->getItemsCount();
+    }
+
+    /**
+     * Retrieve Qty from item
+     *
+     * @param Mage_Wishlist_Model_Item|Mage_Catalog_Model_Product $item
+     * @return float
+     */
+    public function getQty($item)
+    {
+        $qty = $item->getQty() * 1;
+        if (!$qty) {
+            $qty = 1;
+        }
+        return $qty;
     }
 
     /**
@@ -241,5 +309,103 @@ abstract class Mage_Wishlist_Block_Abstract extends Mage_Catalog_Block_Product_A
     public function hasWishlistItems()
     {
         return $this->getWishlistItemsCount() > 0;
+    }
+
+    /**
+     * Adds special block to render price for item with specific product type
+     *
+     * @param string $type
+     * @param string $block
+     * @param string $template
+     */
+    public function addItemPriceBlockType($type, $block = '', $template = '')
+    {
+        if ($type) {
+            $this->_itemPriceBlockTypes[$type] = array(
+                'block' => $block,
+                'template' => $template
+            );
+        }
+    }
+
+    /**
+     * Returns block to render item with some product type
+     *
+     * @param string $productType
+     * @return Mage_Core_Block_Template
+     */
+    protected function _getItemPriceBlock($productType)
+    {
+        if (!isset($this->_itemPriceBlockTypes[$productType])) {
+            $productType = 'default';
+        }
+
+        if (!isset($this->_cachedItemPriceBlocks[$productType])) {
+            $blockType = $this->_itemPriceBlockTypes[$productType]['block'];
+            $template = $this->_itemPriceBlockTypes[$productType]['template'];
+            $block = $this->getLayout()->createBlock($blockType)
+                ->setTemplate($template);
+            $this->_cachedItemPriceBlocks[$productType] = $block;
+        }
+        return $this->_cachedItemPriceBlocks[$productType];
+    }
+
+    /**
+     * Returns product price block html
+     * Overwrites parent price html return to be ready to show configured, partially configured and
+     * non-configured products
+     *
+     * @param Mage_Catalog_Model_Product $product
+     * @param bool $displayMinimalPrice
+     * @param string $idSuffix
+     *
+     * @return string
+     */
+    public function getPriceHtml($product, $displayMinimalPrice = false, $idSuffix = '')
+    {
+        $type_id = $product->getTypeId();
+        if (Mage::helper('catalog')->canApplyMsrp($product)) {
+            $realPriceHtml = $this->_preparePriceRenderer($type_id)
+                ->setProduct($product)
+                ->setDisplayMinimalPrice($displayMinimalPrice)
+                ->setIdSuffix($idSuffix)
+                ->setIsEmulateMode(true)
+                ->toHtml();
+            $product->setAddToCartUrl($this->getAddToCartUrl($product));
+            $product->setRealPriceHtml($realPriceHtml);
+            $type_id = $this->_mapRenderer;
+        }
+
+        return $this->_preparePriceRenderer($type_id)
+            ->setProduct($product)
+            ->setDisplayMinimalPrice($displayMinimalPrice)
+            ->setIdSuffix($idSuffix)
+            ->toHtml();
+    }
+
+    /**
+     * Retrieve URL to item Product
+     *
+     * @param  Mage_Wishlist_Model_Item|Mage_Catalog_Model_Product $item
+     * @param  array $additional
+     * @return string
+     */
+    public function getProductUrl($item, $additional = array())
+    {
+        if ($item instanceof Mage_Catalog_Model_Product) {
+            $product = $item;
+        } else {
+            $product = $item->getProduct();
+        }
+        $buyRequest = $item->getBuyRequest();
+        if (is_object($buyRequest)) {
+            $config = $buyRequest->getSuperProductConfig();
+            if ($config && !empty($config['product_id'])) {
+                $product = Mage::getModel('catalog/product')
+                    ->setStoreId(Mage::app()->getStore()->getStoreId())
+                    ->load($config['product_id']);
+            }
+        }
+        return parent::getProductUrl($product, $additional);
     }
 }

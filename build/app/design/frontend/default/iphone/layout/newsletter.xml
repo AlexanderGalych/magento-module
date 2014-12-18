@@ -21,7 +21,7 @@
  *
  * @category    design
  * @package     default_iphone
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -35,9 +35,9 @@ Default layout, loads most of the pages
     <default>
 
         <!-- Mage_Newsletter -->
-        <!-- reference name="left">
-            <block type="newsletter/subscribe" name="right.newsletter" template="newsletter/subscribe.phtml"/>
-        </reference -->
+        <reference name="footer">
+            <block type="newsletter/subscribe" name="footer.newsletter" as="footer.newsletter" template="newsletter/subscribe.phtml"/>
+        </reference>
 
     </default>
 
@@ -52,17 +52,16 @@ Customer account pages, rendered for all tabs in dashboard
         </reference>
     </customer_account>
 
-    <customer_account_index>
-
-        <reference name="right">
-            <action method="unsetChild"><name>right.newsletter</name></action>
-        </reference>
-    </customer_account_index>
-
-    <newsletter_manage_index>
+    <newsletter_manage_index translate="label">
+        <label>Customer My Account Newsletter Subscriptions</label>
         <update handle="customer_account"/>
-        <reference name="content">
-            <block type="customer/newsletter" name="customer_newsletter"/>
+        <reference name="my.account.wrapper">
+            <block type="customer/newsletter" name="customer_newsletter">
+                <block type="page/html_wrapper" name="customer.newsletter.form.before" as="form_before" translate="label">
+                    <label>Newsletter Subscription Form Before</label>
+                    <action method="setMayBeInvisible"><value>1</value></action>
+                </block>
+            </block>
         </reference>
     </newsletter_manage_index>
 

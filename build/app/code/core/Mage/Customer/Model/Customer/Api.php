@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_Customer
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -36,6 +36,24 @@ class Mage_Customer_Model_Customer_Api extends Mage_Customer_Model_Api_Resource
     protected $_mapAttributes = array(
         'customer_id' => 'entity_id'
     );
+    /**
+     * Prepare data to insert/update.
+     * Creating array for stdClass Object
+     *
+     * @param stdClass $data
+     * @return array
+     */
+    protected function _prepareData($data)
+    {
+       foreach ($this->_mapAttributes as $attributeAlias=>$attributeCode) {
+            if(isset($data[$attributeAlias]))
+            {
+                $data[$attributeCode] = $data[$attributeAlias];
+                unset($data[$attributeAlias]);
+            }
+        }
+        return $data;
+    }
 
     /**
      * Create new customer
@@ -45,6 +63,7 @@ class Mage_Customer_Model_Customer_Api extends Mage_Customer_Model_Api_Resource
      */
     public function create($customerData)
     {
+        $customerData = $this->_prepareData($customerData);
         try {
             $customer = Mage::getModel('customer/customer')
                 ->setData($customerData)
@@ -88,45 +107,36 @@ class Mage_Customer_Model_Customer_Api extends Mage_Customer_Model_Api_Resource
     }
 
     /**
-     * Retrieve cutomers data
+     * Retrieve customers data
      *
-     * @param  array $filters
+     * @param  object|array $filters
      * @return array
      */
     public function items($filters)
     {
-        $collection = Mage::getModel('customer/customer')->getCollection()
-            ->addAttributeToSelect('*');
-
-        if (is_array($filters)) {
-            try {
-                foreach ($filters as $field => $value) {
-                    if (isset($this->_mapAttributes[$field])) {
-                        $field = $this->_mapAttributes[$field];
-                    }
-
-                    $collection->addFieldToFilter($field, $value);
-                }
-            } catch (Mage_Core_Exception $e) {
-                $this->_fault('filters_invalid', $e->getMessage());
+        $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('*');
+        /** @var $apiHelper Mage_Api_Helper_Data */
+        $apiHelper = Mage::helper('api');
+        $filters = $apiHelper->parseFilters($filters, $this->_mapAttributes);
+        try {
+            foreach ($filters as $field => $value) {
+                $collection->addFieldToFilter($field, $value);
             }
+        } catch (Mage_Core_Exception $e) {
+            $this->_fault('filters_invalid', $e->getMessage());
         }
-
         $result = array();
         foreach ($collection as $customer) {
             $data = $customer->toArray();
             $row  = array();
-
             foreach ($this->_mapAttributes as $attributeAlias => $attributeCode) {
                 $row[$attributeAlias] = (isset($data[$attributeCode]) ? $data[$attributeCode] : null);
             }
-
             foreach ($this->getAllowedAttributes($customer) as $attributeCode => $attribute) {
                 if (isset($data[$attributeCode])) {
                     $row[$attributeCode] = $data[$attributeCode];
                 }
             }
-
             $result[] = $row;
         }
 
@@ -142,6 +152,8 @@ class Mage_Customer_Model_Customer_Api extends Mage_Customer_Model_Api_Resource
      */
     public function update($customerId, $customerData)
     {
+        $customerData = $this->_prepareData($customerData);
+
         $customer = Mage::getModel('customer/customer')->load($customerId);
 
         if (!$customer->getId()) {
