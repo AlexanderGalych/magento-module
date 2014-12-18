@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_Checkout
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -73,16 +73,19 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
      */
     protected function _goBack()
     {
-        if ($returnUrl = $this->getRequest()->getParam('return_url')) {
-            // clear layout messages in case of external url redirect
-            if ($this->_isUrlInternal($returnUrl)) {
-                $this->_getSession()->getMessages(true);
+        $returnUrl = $this->getRequest()->getParam('return_url');
+        if ($returnUrl) {
+
+            if (!$this->_isUrlInternal($returnUrl)) {
+                throw new Mage_Exception('External urls redirect to "' . $returnUrl . '" denied!');
             }
+
+            $this->_getSession()->getMessages(true);
             $this->getResponse()->setRedirect($returnUrl);
         } elseif (!Mage::getStoreConfig('checkout/cart/redirect_to_cart')
             && !$this->getRequest()->getParam('in_cart')
-            && $backUrl = $this->_getRefererUrl()) {
-
+            && $backUrl = $this->_getRefererUrl()
+        ) {
             $this->getResponse()->setRedirect($backUrl);
         } else {
             if (($this->getRequest()->getActionName() == 'add') && !$this->getRequest()->getParam('in_cart')) {
@@ -123,16 +126,27 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
             $cart->save();
 
             if (!$this->_getQuote()->validateMinimumAmount()) {
-                $warning = Mage::getStoreConfig('sales/minimum_order/description');
+                $minimumAmount = Mage::app()->getLocale()->currency(Mage::app()->getStore()->getCurrentCurrencyCode())
+                    ->toCurrency(Mage::getStoreConfig('sales/minimum_order/amount'));
+
+                $warning = Mage::getStoreConfig('sales/minimum_order/description')
+                    ? Mage::getStoreConfig('sales/minimum_order/description')
+                    : Mage::helper('checkout')->__('Minimum order amount is %s', $minimumAmount);
+
                 $cart->getCheckoutSession()->addNotice($warning);
             }
         }
 
+        // Compose array of messages to add
+        $messages = array();
         foreach ($cart->getQuote()->getMessages() as $message) {
             if ($message) {
-                $cart->getCheckoutSession()->addMessage($message);
+                // Escape HTML entities in quote message to prevent XSS
+                $message->setCode(Mage::helper('core')->escapeHtml($message->getCode()));
+                $messages[] = $message;
             }
         }
+        $cart->getCheckoutSession()->addUniqueMessages($messages);
 
         /**
          * if customer enteres shopping cart we should mark quote
@@ -194,19 +208,18 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
 
             if (!$this->_getSession()->getNoCartRedirect(true)) {
                 if (!$cart->getQuote()->getHasError()){
-                    $message = $this->__('%s was added to your shopping cart.', Mage::helper('core')->htmlEscape($product->getName()));
+                    $message = $this->__('%s was added to your shopping cart.', Mage::helper('core')->escapeHtml($product->getName()));
                     $this->_getSession()->addSuccess($message);
                 }
                 $this->_goBack();
             }
-        }
-        catch (Mage_Core_Exception $e) {
+        } catch (Mage_Core_Exception $e) {
             if ($this->_getSession()->getUseNotice(true)) {
-                $this->_getSession()->addNotice($e->getMessage());
+                $this->_getSession()->addNotice(Mage::helper('core')->escapeHtml($e->getMessage()));
             } else {
                 $messages = array_unique(explode("\n", $e->getMessage()));
                 foreach ($messages as $message) {
-                    $this->_getSession()->addError($message);
+                    $this->_getSession()->addError(Mage::helper('core')->escapeHtml($message));
                 }
             }
 
@@ -216,9 +229,9 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
             } else {
                 $this->_redirectReferer(Mage::helper('checkout/cart')->getCartUrl());
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->_getSession()->addException($e, $this->__('Cannot add the item to shopping cart.'));
+            Mage::logException($e);
             $this->_goBack();
         }
     }
@@ -236,16 +249,15 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
             foreach ($itemsCollection as $item) {
                 try {
                     $cart->addOrderItem($item, 1);
-                }
-                catch (Mage_Core_Exception $e) {
+                } catch (Mage_Core_Exception $e) {
                     if ($this->_getSession()->getUseNotice(true)) {
                         $this->_getSession()->addNotice($e->getMessage());
                     } else {
                         $this->_getSession()->addError($e->getMessage());
                     }
-                }
-                catch (Exception $e) {
+                } catch (Exception $e) {
                     $this->_getSession()->addException($e, $this->__('Cannot add the item to shopping cart.'));
+                    Mage::logException($e);
                     $this->_goBack();
                 }
             }
@@ -256,9 +268,140 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
     }
 
     /**
-     * Update shoping cart data action
+     * Action to reconfigure cart item
+     */
+    public function configureAction()
+    {
+        // Extract item and product to configure
+        $id = (int) $this->getRequest()->getParam('id');
+        $quoteItem = null;
+        $cart = $this->_getCart();
+        if ($id) {
+            $quoteItem = $cart->getQuote()->getItemById($id);
+        }
+
+        if (!$quoteItem) {
+            $this->_getSession()->addError($this->__('Quote item is not found.'));
+            $this->_redirect('checkout/cart');
+            return;
+        }
+
+        try {
+            $params = new Varien_Object();
+            $params->setCategoryId(false);
+            $params->setConfigureMode(true);
+            $params->setBuyRequest($quoteItem->getBuyRequest());
+
+            Mage::helper('catalog/product_view')->prepareAndRender($quoteItem->getProduct()->getId(), $this, $params);
+        } catch (Exception $e) {
+            $this->_getSession()->addError($this->__('Cannot configure product.'));
+            Mage::logException($e);
+            $this->_goBack();
+            return;
+        }
+    }
+
+    /**
+     * Update product configuration for a cart item
+     */
+    public function updateItemOptionsAction()
+    {
+        $cart   = $this->_getCart();
+        $id = (int) $this->getRequest()->getParam('id');
+        $params = $this->getRequest()->getParams();
+
+        if (!isset($params['options'])) {
+            $params['options'] = array();
+        }
+        try {
+            if (isset($params['qty'])) {
+                $filter = new Zend_Filter_LocalizedToNormalized(
+                    array('locale' => Mage::app()->getLocale()->getLocaleCode())
+                );
+                $params['qty'] = $filter->filter($params['qty']);
+            }
+
+            $quoteItem = $cart->getQuote()->getItemById($id);
+            if (!$quoteItem) {
+                Mage::throwException($this->__('Quote item is not found.'));
+            }
+
+            $item = $cart->updateItem($id, new Varien_Object($params));
+            if (is_string($item)) {
+                Mage::throwException($item);
+            }
+            if ($item->getHasError()) {
+                Mage::throwException($item->getMessage());
+            }
+
+            $related = $this->getRequest()->getParam('related_product');
+            if (!empty($related)) {
+                $cart->addProductsByIds(explode(',', $related));
+            }
+
+            $cart->save();
+
+            $this->_getSession()->setCartWasUpdated(true);
+
+            Mage::dispatchEvent('checkout_cart_update_item_complete',
+                array('item' => $item, 'request' => $this->getRequest(), 'response' => $this->getResponse())
+            );
+            if (!$this->_getSession()->getNoCartRedirect(true)) {
+                if (!$cart->getQuote()->getHasError()){
+                    $message = $this->__('%s was updated in your shopping cart.', Mage::helper('core')->htmlEscape($item->getProduct()->getName()));
+                    $this->_getSession()->addSuccess($message);
+                }
+                $this->_goBack();
+            }
+        } catch (Mage_Core_Exception $e) {
+            if ($this->_getSession()->getUseNotice(true)) {
+                $this->_getSession()->addNotice($e->getMessage());
+            } else {
+                $messages = array_unique(explode("\n", $e->getMessage()));
+                foreach ($messages as $message) {
+                    $this->_getSession()->addError($message);
+                }
+            }
+
+            $url = $this->_getSession()->getRedirectUrl(true);
+            if ($url) {
+                $this->getResponse()->setRedirect($url);
+            } else {
+                $this->_redirectReferer(Mage::helper('checkout/cart')->getCartUrl());
+            }
+        } catch (Exception $e) {
+            $this->_getSession()->addException($e, $this->__('Cannot update the item.'));
+            Mage::logException($e);
+            $this->_goBack();
+        }
+        $this->_redirect('*/*');
+    }
+
+    /**
+     * Update shopping cart data action
      */
     public function updatePostAction()
+    {
+        $updateAction = (string)$this->getRequest()->getParam('update_cart_action');
+
+        switch ($updateAction) {
+            case 'empty_cart':
+                $this->_emptyShoppingCart();
+                break;
+            case 'update_qty':
+                $this->_updateShoppingCart();
+                break;
+            default:
+                $this->_updateShoppingCart();
+        }
+
+        $this->_goBack();
+    }
+
+    /**
+     * Update customer's shopping cart
+     */
+    protected function _updateShoppingCart()
     {
         try {
             $cartData = $this->getRequest()->getParam('cart');
@@ -268,25 +411,40 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
                 );
                 foreach ($cartData as $index => $data) {
                     if (isset($data['qty'])) {
-                        $cartData[$index]['qty'] = $filter->filter($data['qty']);
+                        $cartData[$index]['qty'] = $filter->filter(trim($data['qty']));
                     }
                 }
                 $cart = $this->_getCart();
                 if (! $cart->getCustomerSession()->getCustomer()->getId() && $cart->getQuote()->getCustomerId()) {
                     $cart->getQuote()->setCustomerId(null);
                 }
+
+                $cartData = $cart->suggestItemsQty($cartData);
                 $cart->updateItems($cartData)
                     ->save();
             }
             $this->_getSession()->setCartWasUpdated(true);
-        }
-        catch (Mage_Core_Exception $e) {
-            $this->_getSession()->addError($e->getMessage());
-        }
-        catch (Exception $e) {
+        } catch (Mage_Core_Exception $e) {
+            $this->_getSession()->addError(Mage::helper('core')->escapeHtml($e->getMessage()));
+        } catch (Exception $e) {
             $this->_getSession()->addException($e, $this->__('Cannot update shopping cart.'));
+            Mage::logException($e);
         }
-        $this->_goBack();
+    }
+
+    /**
+     * Empty customer's shopping cart
+     */
+    protected function _emptyShoppingCart()
+    {
+        try {
+            $this->_getCart()->truncate()->save();
+            $this->_getSession()->setCartWasUpdated(true);
+        } catch (Mage_Core_Exception $exception) {
+            $this->_getSession()->addError($exception->getMessage());
+        } catch (Exception $exception) {
+            $this->_getSession()->addException($exception, $this->__('Cannot update shopping cart.'));
+        }
     }
 
     /**
@@ -301,6 +459,7 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
                   ->save();
             } catch (Exception $e) {
                 $this->_getSession()->addError($this->__('Cannot remove the item.'));
+                Mage::logException($e);
             }
         }
         $this->_redirectReferer(Mage::getUrl('*/*'));
@@ -367,7 +526,7 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
                 ->collectTotals()
                 ->save();
 
-            if ($couponCode) {
+            if (strlen($couponCode)) {
                 if ($couponCode == $this->_getQuote()->getCouponCode()) {
                     $this->_getSession()->addSuccess(
                         $this->__('Coupon code "%s" was applied.', Mage::helper('core')->htmlEscape($couponCode))
@@ -382,12 +541,11 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
                 $this->_getSession()->addSuccess($this->__('Coupon code was canceled.'));
             }
 
-        }
-        catch (Mage_Core_Exception $e) {
+        } catch (Mage_Core_Exception $e) {
             $this->_getSession()->addError($e->getMessage());
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->_getSession()->addError($this->__('Cannot apply the coupon code.'));
+            Mage::logException($e);
         }
 
         $this->_goBack();

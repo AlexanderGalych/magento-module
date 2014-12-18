@@ -20,17 +20,10 @@
  *
  * @category    design
  * @package     default_iphone
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
-
-<fieldset class="product-options" id="product-options-wrapper">
-<?php echo $this->getChildHtml('', true, true);?>
-<?php if ($this->hasRequiredOptions()):?>
-<p class="required"><?php echo $this->__('* Required Fields') ?></p>
-<?php endif;?>
-</fieldset>
-<script type="text/javascript">
-decorateGeneric($$('#product-options-wrapper dl'), ['last']);
-</script>
+<div class="product-options" id="product-options-wrapper">
+    <?php echo $this->getChildHtml('', true, true);?>
+</div>

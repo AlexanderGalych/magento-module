@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_CatalogInventory
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -28,15 +28,53 @@
 /**
  * Catalog Inventory Stock Model
  *
- * @category   Mage
- * @package    Mage_CatalogInvemtory
- * @author     Magento Core Team <core@magentocommerce.com>
+ * @method Mage_CatalogInventory_Model_Resource_Stock_Item _getResource()
+ * @method Mage_CatalogInventory_Model_Resource_Stock_Item getResource()
+ * @method Mage_CatalogInventory_Model_Stock_Item setProductId(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setStockId(int $value)
+ * @method float getQty()
+ * @method Mage_CatalogInventory_Model_Stock_Item setQty(float $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setMinQty(float $value)
+ * @method int getUseConfigMinQty()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigMinQty(int $value)
+ * @method int getIsQtyDecimal()
+ * @method Mage_CatalogInventory_Model_Stock_Item setIsQtyDecimal(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setBackorders(int $value)
+ * @method int getUseConfigBackorders()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigBackorders(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setMinSaleQty(float $value)
+ * @method int getUseConfigMinSaleQty()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigMinSaleQty(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setMaxSaleQty(float $value)
+ * @method int getUseConfigMaxSaleQty()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigMaxSaleQty(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setIsInStock(int $value)
+ * @method string getLowStockDate()
+ * @method Mage_CatalogInventory_Model_Stock_Item setLowStockDate(string $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setNotifyStockQty(float $value)
+ * @method int getUseConfigNotifyStockQty()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigNotifyStockQty(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setManageStock(int $value)
+ * @method int getUseConfigManageStock()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigManageStock(int $value)
+ * @method int getStockStatusChangedAutomatically()
+ * @method Mage_CatalogInventory_Model_Stock_Item setStockStatusChangedAutomatically(int $value)
+ * @method int getUseConfigQtyIncrements()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigQtyIncrements(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setQtyIncrements(float $value)
+ * @method int getUseConfigEnableQtyIncrements()
+ * @method Mage_CatalogInventory_Model_Stock_Item setUseConfigEnableQtyIncrements(int $value)
+ * @method Mage_CatalogInventory_Model_Stock_Item setEnableQtyIncrements(int $value)
+ *
+ * @category    Mage
+ * @package     Mage_CatalogInventory
+ * @author      Magento Core Team <core@magentocommerce.com>
  */
 class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
 {
-    const XML_PATH_GLOBAL            = 'cataloginventory/options/';
-    const XML_PATH_CAN_SUBTRACT      = 'cataloginventory/options/can_subtract';
-    const XML_PATH_CAN_BACK_IN_STOCK = 'cataloginventory/options/can_back_in_stock';
+    const XML_PATH_GLOBAL                = 'cataloginventory/options/';
+    const XML_PATH_CAN_SUBTRACT          = 'cataloginventory/options/can_subtract';
+    const XML_PATH_CAN_BACK_IN_STOCK     = 'cataloginventory/options/can_back_in_stock';
 
     const XML_PATH_ITEM                  = 'cataloginventory/item_options/';
     const XML_PATH_MIN_QTY               = 'cataloginventory/item_options/min_qty';
@@ -48,7 +86,7 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     const XML_PATH_ENABLE_QTY_INCREMENTS = 'cataloginventory/item_options/enable_qty_increments';
     const XML_PATH_QTY_INCREMENTS        = 'cataloginventory/item_options/qty_increments';
 
-    const ENTITY                    = 'cataloginventory_stock_item';
+    const ENTITY                         = 'cataloginventory_stock_item';
 
     /**
      * @var array
@@ -91,12 +129,33 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     protected $_customerGroupId;
 
     /**
+     * Whether index events should be processed immediately
+     *
+     * @var bool
+     */
+    protected $_processIndexEvents = true;
+
+    /**
      * Initialize resource model
      *
      */
     protected function _construct()
     {
         $this->_init('cataloginventory/stock_item');
+    }
+
+    /**
+     * Init mapping array of short fields to
+     * its full names
+     *
+     * @resturn Varien_Object
+     */
+    protected function _initOldFieldsMap()
+    {
+        $this->_oldFieldsMap = array(
+            'stock_status_changed_automatically' => 'stock_status_changed_auto',
+            'use_config_enable_qty_increments'   => 'use_config_enable_qty_inc'
+        );
     }
 
     /**
@@ -111,7 +170,7 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Retrieve Product Id data wraper
+     * Retrieve Product Id data wrapper
      *
      * @return int
      */
@@ -220,14 +279,12 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     /**
      * Retrieve minimal quantity available for item status in stock
      *
-     * @return decimal
+     * @return float
      */
     public function getMinQty()
     {
-        if ($this->getUseConfigMinQty()) {
-            return (float) Mage::getStoreConfig(self::XML_PATH_MIN_QTY);
-        }
-        return $this->getData('min_qty');
+        return (float)($this->getUseConfigMinQty() ? Mage::getStoreConfig(self::XML_PATH_MIN_QTY)
+            : $this->getData('min_qty'));
     }
 
     /**
@@ -259,41 +316,37 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
      */
     public function getMinSaleQty()
     {
-        if ($this->getCustomerGroupId()) {
-            $customerGroupId = $this->getCustomerGroupId();
-        } else if (Mage::app()->getStore()->isAdmin()) {
-            $customerGroupId = Mage_Customer_Model_Group::CUST_GROUP_ALL;
-        } else {
-            $customerGroupId = Mage::getSingleton('customer/session')->getCustomerGroupId();
+        $customerGroupId = $this->getCustomerGroupId();
+        if (!$customerGroupId) {
+            $customerGroupId = Mage::app()->getStore()->isAdmin()
+                ? Mage_Customer_Model_Group::CUST_GROUP_ALL
+                : Mage::getSingleton('customer/session')->getCustomerGroupId();
         }
-        if (!array_key_exists($customerGroupId, $this->_minSaleQtyCache)) {
-            $minSaleQty = null;
-            if ($this->getUseConfigMinSaleQty()) {
-                $minSaleQty = Mage::helper('cataloginventory/minsaleqty')->getConfigValue($customerGroupId);
-            } else {
-                $minSaleQty = $this->getData('min_sale_qty');
-            }
-            $minSaleQty = (!empty($minSaleQty) ? (float)$minSaleQty : null);
-            $this->_minSaleQtyCache[$customerGroupId] = $minSaleQty;
+
+        if (!isset($this->_minSaleQtyCache[$customerGroupId])) {
+            $minSaleQty = $this->getUseConfigMinSaleQty()
+                ? Mage::helper('cataloginventory/minsaleqty')->getConfigValue($customerGroupId)
+                : $this->getData('min_sale_qty');
+
+            $this->_minSaleQtyCache[$customerGroupId] = empty($minSaleQty) ? 0 : (float)$minSaleQty;
         }
-        return $this->_minSaleQtyCache[$customerGroupId];
+
+        return $this->_minSaleQtyCache[$customerGroupId] ? $this->_minSaleQtyCache[$customerGroupId] : null;
     }
 
     /**
-     * Retrieve Maximum Qty Allowed in Shopping Cart data wraper
+     * Retrieve Maximum Qty Allowed in Shopping Cart data wrapper
      *
-     * @return unknown
+     * @return float
      */
     public function getMaxSaleQty()
     {
-        if ($this->getUseConfigMaxSaleQty()) {
-            return (float) Mage::getStoreConfig(self::XML_PATH_MAX_SALE_QTY);
-        }
-        return $this->getData('max_sale_qty');
+        return (float)($this->getUseConfigMaxSaleQty() ? Mage::getStoreConfig(self::XML_PATH_MAX_SALE_QTY)
+            : $this->getData('max_sale_qty'));
     }
 
     /**
-     * Retrieve Notify for Quantity Below data wraper
+     * Retrieve Notify for Quantity Below data wrapper
      *
      * @return float
      */
@@ -302,7 +355,7 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
         if ($this->getUseConfigNotifyStockQty()) {
             return (float) Mage::getStoreConfig(self::XML_PATH_NOTIFY_STOCK_QTY);
         }
-        return (float)$this->getData('notify_stock_qty');
+        return (float) $this->getData('notify_stock_qty');
     }
 
     /**
@@ -312,34 +365,44 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
      */
     public function getEnableQtyIncrements()
     {
-        if ($this->getUseConfigEnableQtyIncrements()) {
-            return Mage::getStoreConfigFlag(self::XML_PATH_ENABLE_QTY_INCREMENTS);
-        }
-        return (bool)$this->getData('enable_qty_increments');
+        return $this->getUseConfigEnableQtyIncrements()
+            ? Mage::getStoreConfigFlag(self::XML_PATH_ENABLE_QTY_INCREMENTS)
+            : (bool)$this->getData('enable_qty_increments');
     }
 
     /**
-     * Retrieve Quantity Increments data wraper
+     * Retrieve Quantity Increments data wrapper
      *
      * @return float|false
      */
     public function getQtyIncrements()
     {
         if ($this->_qtyIncrements === null) {
-            $this->_qtyIncrements = false;
             if ($this->getEnableQtyIncrements()) {
-                if ($this->getUseConfigQtyIncrements()) {
-                    $this->_qtyIncrements = Mage::getStoreConfig(self::XML_PATH_QTY_INCREMENTS);
-                } else {
-                    $this->_qtyIncrements = $this->getData('qty_increments');
-                }
-                $this->_qtyIncrements = (float)$this->_qtyIncrements;
+                $this->_qtyIncrements = (float)($this->getUseConfigQtyIncrements()
+                    ? Mage::getStoreConfig(self::XML_PATH_QTY_INCREMENTS)
+                    : $this->getData('qty_increments'));
                 if ($this->_qtyIncrements <= 0) {
                     $this->_qtyIncrements = false;
                 }
+            } else {
+                $this->_qtyIncrements = false;
             }
         }
         return $this->_qtyIncrements;
+    }
+
+     /**
+     * Retrieve Default Quantity Increments data wrapper
+     *
+     * @deprecated since 1.7.0.0
+     * @return int|false
+     */
+    public function getDefaultQtyIncrements()
+    {
+        return Mage::getStoreConfigFlag(self::XML_PATH_ENABLE_QTY_INCREMENTS)
+            ? (int)Mage::getStoreConfig(self::XML_PATH_QTY_INCREMENTS)
+            : false;
     }
 
     /**
@@ -356,7 +419,7 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Retrieve Manage Stock data wraper
+     * Retrieve Manage Stock data wrapper
      *
      * @return int
      */
@@ -387,23 +450,16 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
      */
     public function checkQty($qty)
     {
-        if (!$this->getManageStock()) {
+        if (!$this->getManageStock() || Mage::app()->getStore()->isAdmin()) {
             return true;
         }
-        if ($this->getQty() - $qty < 0) {
+
+        if ($this->getQty() - $this->getMinQty() - $qty < 0) {
             switch ($this->getBackorders()) {
                 case Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY:
                 case Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NOTIFY:
                     break;
                 default:
-                    /*if ($this->getProduct()) {
-                        Mage::throwException(
-                            Mage::helper('cataloginventory')->__('The requested quantity for "%s" is not available.', $this->getProduct()->getName())
-                        );
-                    }
-                    else {
-                        Mage::throwException(Mage::helper('cataloginventory')->__('The requested quantity is not available.'));
-                    }*/
                     return false;
                     break;
             }
@@ -412,16 +468,56 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Returns suggested qty that satisfies qty increments and minQty/maxQty/minSaleQty/maxSaleQty conditions
+     * or original qty if such value does not exist
+     *
+     * @param int|float $qty
+     * @return int|float
+     */
+    public function suggestQty($qty)
+    {
+        // We do not manage stock
+        if ($qty <= 0 || !$this->getManageStock()) {
+            return $qty;
+        }
+
+        $qtyIncrements = (int)$this->getQtyIncrements(); // Currently only integer increments supported
+        if ($qtyIncrements < 2) {
+            return $qty;
+        }
+
+        $minQty = max($this->getMinSaleQty(), $qtyIncrements);
+        $divisibleMin = ceil($minQty / $qtyIncrements) * $qtyIncrements;
+
+        $maxQty = min($this->getQty() - $this->getMinQty(), $this->getMaxSaleQty());
+        $divisibleMax = floor($maxQty / $qtyIncrements) * $qtyIncrements;
+
+        if ($qty < $minQty || $qty > $maxQty || $divisibleMin > $divisibleMax) {
+            // Do not perform rounding for qty that does not satisfy min/max conditions to not confuse customer
+            return $qty;
+        }
+
+        // Suggest value closest to given qty
+        $closestDivisibleLeft = floor($qty / $qtyIncrements) * $qtyIncrements;
+        $closestDivisibleRight = $closestDivisibleLeft + $qtyIncrements;
+        $acceptableLeft = min(max($divisibleMin, $closestDivisibleLeft), $divisibleMax);
+        $acceptableRight = max(min($divisibleMax, $closestDivisibleRight), $divisibleMin);
+        return abs($acceptableLeft - $qty) < abs($acceptableRight - $qty) ? $acceptableLeft : $acceptableRight;
+    }
+
+    /**
      * Checking quote item quantity
      *
+     * Second parameter of this method specifies quantity of this product in whole shopping cart
+     * which should be checked for stock availability
+     *
      * @param mixed $qty quantity of this item (item qty x parent item qty)
-     * @param mixed $summaryQty quantity of this product in whole shopping cart which should be checked for stock availability
+     * @param mixed $summaryQty quantity of this product
      * @param mixed $origQty original qty of item (not multiplied on parent item qty)
      * @return Varien_Object
      */
     public function checkQuoteItemQty($qty, $summaryQty, $origQty = 0)
     {
-
         $result = new Varien_Object();
         $result->setHasError(false);
 
@@ -450,19 +546,30 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
             $result->setOrigQty($origQty);
         }
 
-        if ($this->getMinSaleQty() && ($qty) < $this->getMinSaleQty()) {
+        if ($this->getMinSaleQty() && $qty < $this->getMinSaleQty()) {
             $result->setHasError(true)
-                ->setMessage(Mage::helper('cataloginventory')->__('The minimum quantity allowed for purchase is %s.', $this->getMinSaleQty() * 1))
+                ->setMessage(
+                    Mage::helper('cataloginventory')->__('The minimum quantity allowed for purchase is %s.', $this->getMinSaleQty() * 1)
+                )
+                ->setErrorCode('qty_min')
                 ->setQuoteMessage(Mage::helper('cataloginventory')->__('Some of the products cannot be ordered in requested quantity.'))
                 ->setQuoteMessageIndex('qty');
             return $result;
         }
 
-        if ($this->getMaxSaleQty() && ($qty) > $this->getMaxSaleQty()) {
+        if ($this->getMaxSaleQty() && $qty > $this->getMaxSaleQty()) {
             $result->setHasError(true)
-                ->setMessage(Mage::helper('cataloginventory')->__('The maximum quantity allowed for purchase is %s.', $this->getMaxSaleQty() * 1))
+                ->setMessage(
+                    Mage::helper('cataloginventory')->__('The maximum quantity allowed for purchase is %s.', $this->getMaxSaleQty() * 1)
+                )
+                ->setErrorCode('qty_max')
                 ->setQuoteMessage(Mage::helper('cataloginventory')->__('Some of the products cannot be ordered in requested quantity.'))
                 ->setQuoteMessageIndex('qty');
+            return $result;
+        }
+
+        $result->addData($this->checkQtyIncrements($qty)->getData());
+        if ($result->getHasError()) {
             return $result;
         }
 
@@ -479,33 +586,55 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
             return $result;
         }
 
-        $result->addData($this->checkQtyIncrements($qty)->getData());
-        if ($result->getHasError()) {
-            return $result;
-        }
-
-        if (!$this->checkQty($summaryQty)) {
+        if (!$this->checkQty($summaryQty) || !$this->checkQty($qty)) {
             $message = Mage::helper('cataloginventory')->__('The requested quantity for "%s" is not available.', $this->getProductName());
             $result->setHasError(true)
                 ->setMessage($message)
                 ->setQuoteMessage($message)
                 ->setQuoteMessageIndex('qty');
             return $result;
-        }
-        else {
+        } else {
             if (($this->getQty() - $summaryQty) < 0) {
                 if ($this->getProductName()) {
-                    $backorderQty = ($this->getQty() > 0) ? ($summaryQty - $this->getQty()) * 1 : $qty * 1;
-                    if ($backorderQty>$qty) {
-                        $backorderQty = $qty;
+                    if ($this->getIsChildItem()) {
+                        $backorderQty = ($this->getQty() > 0) ? ($summaryQty - $this->getQty()) * 1 : $qty * 1;
+                        if ($backorderQty > $qty) {
+                            $backorderQty = $qty;
+                        }
+
+                        $result->setItemBackorders($backorderQty);
+                    } else {
+                        $orderedItems = $this->getOrderedItems();
+                        $itemsLeft = ($this->getQty() > $orderedItems) ? ($this->getQty() - $orderedItems) * 1 : 0;
+                        $backorderQty = ($itemsLeft > 0) ? ($qty - $itemsLeft) * 1 : $qty * 1;
+
+                        if ($backorderQty > 0) {
+                            $result->setItemBackorders($backorderQty);
+                        }
+                        $this->setOrderedItems($orderedItems + $qty);
                     }
-                    $result->setItemBackorders($backorderQty);
+
                     if ($this->getBackorders() == Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NOTIFY) {
-                        $result->setMessage(Mage::helper('cataloginventory')->__('This product is not available in the requested quantity. %s of the items will be backordered.', ($backorderQty * 1), $this->getProductName()));
+                        if (!$this->getIsChildItem()) {
+                            $result->setMessage(
+                                Mage::helper('cataloginventory')->__('This product is not available in the requested quantity. %s of the items will be backordered.', ($backorderQty * 1))
+                            );
+                        } else {
+                            $result->setMessage(
+                               Mage::helper('cataloginventory')->__('"%s" is not available in the requested quantity. %s of the items will be backordered.', $this->getProductName(), ($backorderQty * 1))
+                            );
+                        }
+                    } elseif (Mage::app()->getStore()->isAdmin()) {
+                        $result->setMessage(
+                            Mage::helper('cataloginventory')->__('The requested quantity for "%s" is not available.', $this->getProductName())
+                        );
                     }
                 }
+            } else {
+                if (!$this->getIsChildItem()) {
+                    $this->setOrderedItems($qty + (int)$this->getOrderedItems());
+                }
             }
-            // no return intentionally
         }
 
         return $result;
@@ -520,16 +649,29 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     public function checkQtyIncrements($qty)
     {
         $result = new Varien_Object();
-        if (!$this->getManageStock() || $this->getSuppressCheckQtyIncrements()) {
+        if ($this->getSuppressCheckQtyIncrements()) {
             return $result;
         }
+
         $qtyIncrements = $this->getQtyIncrements();
-        if ($qtyIncrements && ($qty % $qtyIncrements != 0)) {
+        if ($qtyIncrements && (Mage::helper('core')->getExactDivision($qty, $qtyIncrements) != 0)) {
             $result->setHasError(true)
-                ->setMessage(Mage::helper('cataloginventory')->__('This product is available for purchase in increments of %s only.', $qtyIncrements * 1))
-                ->setQuoteMessage(Mage::helper('cataloginventory')->__('Some of the products cannot be ordered in the requested quantity.'))
+                ->setQuoteMessage(
+                    Mage::helper('cataloginventory')->__('Some of the products cannot be ordered in the requested quantity.')
+                )
+                ->setErrorCode('qty_increments')
                 ->setQuoteMessageIndex('qty');
+            if ($this->getIsChildItem()) {
+                $result->setMessage(
+                    Mage::helper('cataloginventory')->__('%s is available for purchase in increments of %s only.',$this->getProductName(), $qtyIncrements * 1)
+                );
+            } else {
+                $result->setMessage(
+                    Mage::helper('cataloginventory')->__('This product is available for purchase in increments of %s only.', $qtyIncrements * 1)
+                );
+            }
         }
+
         return $result;
     }
 
@@ -554,8 +696,9 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
      * @param string $errorIndex
      * @return Mage_CatalogInventory_Model_Stock_Item
      */
-    protected function _addQuoteItemError(Mage_Sales_Model_Quote_Item $item, $itemError, $quoteError, $errorIndex='error')
-    {
+    protected function _addQuoteItemError(Mage_Sales_Model_Quote_Item $item, $itemError,
+        $quoteError, $errorIndex='error'
+    ) {
         $item->setHasError(true);
         $item->setMessage($itemError);
         $item->setQuoteMessage($quoteError);
@@ -635,16 +778,21 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Process stock status index on item after commit
+     * Reindex CatalogInventory save event
      *
      * @return Mage_CatalogInventory_Model_Stock_Item
      */
-    public function afterCommitCallback()
+    protected function _afterSave()
     {
-        parent::afterCommitCallback();
-        Mage::getSingleton('index/indexer')->processEntityAction(
-            $this, self::ENTITY, Mage_Index_Model_Event::TYPE_SAVE
-        );
+        parent::_afterSave();
+
+        /** @var $indexer Mage_Index_Model_Indexer */
+        $indexer = Mage::getSingleton('index/indexer');
+        if ($this->_processIndexEvents) {
+            $indexer->processEntityAction($this, self::ENTITY, Mage_Index_Model_Event::TYPE_SAVE);
+        } else {
+            $indexer->logEvent($this, self::ENTITY, Mage_Index_Model_Event::TYPE_SAVE);
+        }
         return $this;
     }
 
@@ -684,6 +832,16 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Returns product instance
+     *
+     * @return Mage_Catalog_Model_Product|null
+     */
+    public function getProduct()
+    {
+        return $this->_productInstance ? $this->_productInstance : $this->_getData('product');
+    }
+
+    /**
      * Retrieve stock qty whether product is composite or no
      *
      * @return float
@@ -711,11 +869,37 @@ class Mage_CatalogInventory_Model_Stock_Item extends Mage_Core_Model_Abstract
                 }
             }
             $stockQty = (float) $stockQty;
-            if ($stockQty < 0 || !$this->getManageStock() || !$this->getIsInStock() || ($product && !$product->isSaleable())) {
+            if ($stockQty < 0 || !$this->getManageStock()
+                || !$this->getIsInStock() || ($product && !$product->isSaleable())
+            ) {
                 $stockQty = 0;
             }
             $this->setStockQty($stockQty);
         }
         return $this->getData('stock_qty');
+    }
+
+    /**
+     * Reset model data
+     * @return Mage_CatalogInventory_Model_Stock_Item
+     */
+    public function reset()
+    {
+        if ($this->_productInstance) {
+            $this->_productInstance = null;
+        }
+        return $this;
+    }
+
+    /**
+     * Set whether index events should be processed immediately
+     *
+     * @param bool $process
+     * @return Mage_CatalogInventory_Model_Stock_Item
+     */
+    public function setProcessIndexEvents($process = true)
+    {
+        $this->_processIndexEvents = $process;
+        return $this;
     }
 }

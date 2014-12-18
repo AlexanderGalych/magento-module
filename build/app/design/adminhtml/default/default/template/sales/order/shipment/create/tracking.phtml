@@ -20,17 +20,14 @@
  *
  * @category    design
  * @package     default_default
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
-<?php
-/**
- * @see Mage_Adminhtml_Block_Sales_Order_Shipment_Create_Tracking
- */
-?>
+<?php /** @var $this Mage_Adminhtml_Block_Sales_Order_Shipment_Create_Tracking */ ?>
 <script type="text/javascript">
-var trackingControl = {};
+//<![CDATA[
+var trackingControl;
 trackingControl = {
     index : 0,
     add : function () {
@@ -69,6 +66,7 @@ trackingControl = {
         }
     }
 }
+//]]>
 </script>
 <div class="grid">
 <table cellspacing="0" class="data" id="tracking_numbers_table">
@@ -80,7 +78,7 @@ trackingControl = {
         <tr class="headings">
             <th><?php echo Mage::helper('sales')->__('Carrier') ?></th>
             <th><?php echo Mage::helper('sales')->__('Title') ?></th>
-            <th><?php echo Mage::helper('sales')->__('Number') ?></th>
+            <th><?php echo Mage::helper('sales')->__('Number') ?> <span class="required">*</span></th>
             <th class="last"><?php echo Mage::helper('sales')->__('Action') ?></th>
         </tr>
     </thead>
@@ -94,12 +92,12 @@ trackingControl = {
             <td>
                 <select name="tracking[__index__][carrier_code]" id="trackingC__index__" class="select carrier" style="width:110px;" disabled="disabled">
                     <?php foreach ($this->getCarriers() as $_code=>$_name): ?>
-                    <option value="<?php echo $_code ?>"><?php echo $_name ?></option>
+                    <option value="<?php echo $_code ?>"><?php echo $this->escapeHtml($_name) ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>
             <td><input class="input-text number-title" type="text" name="tracking[__index__][title]" id="trackingT__index__" value="" disabled="disabled" /></td>
-            <td><input class="input-text" type="text" name="tracking[__index__][number]" id="trackingN__index__" value="" disabled="disabled" /></td>
+            <td><input class="input-text required-entry" type="text" name="tracking[__index__][number]" id="trackingN__index__" value="" disabled="disabled" /></td>
             <td class="last"><a href="#" onclick="trackingControl.deleteRow(event);return false"><?php echo $this->__('Delete') ?></a></td>
         </tr>
     </tbody>

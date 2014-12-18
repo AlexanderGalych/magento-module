@@ -20,7 +20,7 @@
  *
  * @category    design
  * @package     default_iphone
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -32,31 +32,24 @@
  */
 ?>
 <?php if($this->canShowBlock()): ?>
-    <div class="box layered-nav">
-        <div class="head">
+<div class="filters-block">
+    <?php echo $this->getStateHtml() ?>
+    <?php if ($this->getLayer()->getState()->getFilters()): ?>
+        <div class="actions"><a href="<?php echo $this->getClearUrl() ?>"><?php echo $this->__('Clear All') ?></a></div>
+    <?php endif; ?>
+    <div class="block-content">
+    <?php if($this->canShowOptions()): ?>
             <h3><?php echo $this->__('Shop By') ?></h3>
-        </div>
-
-        <div class="border-creator">
-        <?php echo $this->getStateHtml() ?>
-        <?php if($this->canShowOptions()): ?>
-            <div class="narrow-by">
-                <h4><?php echo $this->__('Shopping Options') ?></h4>
-            <dl id="narrow-by-list">
-                <?php $_filters = $this->getFilters() ?>
-                <?php foreach ($_filters as $_filter): ?>
+            <?php $_filters = $this->getFilters() ?>
+            <?php foreach ($_filters as $_filter): ?>
                 <?php if($_filter->getItemsCount()): ?>
-                <dt><?php echo $this->__($_filter->getName()) ?></dt>
-                <dd>
-                <?php echo $_filter->getHtml() ?>
-                </dd>
+                <dl>
+                    <dt><?php echo $this->__($_filter->getName()) ?></dt>
+                    <dd><?php echo $_filter->getHtml() ?></dd>
+                </dl>
                 <?php endif; ?>
-                <?php endforeach; ?>
-            </dl>
-            <script type="text/javascript">decorateDataList('narrow-by-list')</script>
-            </div>
-            <?php endif; ?>
-        </div>
+            <?php endforeach; ?>
+    <?php endif; ?>
     </div>
+</div>
 <?php endif; ?>
-<!-- [ends] .browse-by // -->

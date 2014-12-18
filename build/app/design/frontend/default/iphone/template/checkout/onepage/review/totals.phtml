@@ -20,13 +20,17 @@
  *
  * @category    design
  * @package     default_iphone
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
+/**
+ * @see Mage_Checkout_Block_Cart_Totals
  */
 ?>
 <?php if ($this->getTotals()): ?>
 <tfoot>
-    <?php $_colspan = 3; ?>
+    <?php $_colspan = 0; ?>
     <?php echo $this->renderTotals(null, $_colspan); ?>
     <?php echo $this->renderTotals('footer', $_colspan); ?>
     <?php if ($this->needDisplayBaseGrandtotal()):?>

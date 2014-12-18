@@ -20,7 +20,7 @@
  *
  * @category    design
  * @package     default_iphone
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -31,18 +31,40 @@
  * @see Mage_Catalog_Block_Category_View
  */
 ?>
-<div class="category-block">
-<?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
-    <div class="category-head">
-        <!--
-        <?php if($this->IsRssCatalogEnable() && $this->IsTopCategory()): ?>
-            <a href="<?php echo $this->getRssLink() ?>" class="link-feed right"><?php echo $this->__('Subscribe to RSS Feed') ?></a>
-        <?php endif; ?>
-        -->
-    <h2><?php echo $this->htmlEscape($this->getCurrentCategory()->getName()) ?></h2>
-    </div>
-    <?php if($_description=$this->getCurrentCategory()->getDescription()): ?>
-        <p class="category-description"><?php echo $_helper->categoryAttribute($this->getCurrentCategory(), $_description, 'description') ?></p>
+<?php
+    $_helper    = $this->helper('catalog/output');
+    $_category  = $this->getCurrentCategory();
+    $_categoryTitle = '<div class="category-title page-title"><h1>'.$_helper->categoryAttribute($_category, $_category->getName(), 'name').'</h1></div>';
+    $_imgUrl = $_category->getImageUrl();
+    $_imgHtml   = '';
+    if ($_imgUrl) {
+        $_imgHtml = '<p class="category-image"><img src="'.$_imgUrl.'" alt="'.$this->escapeHtml($_category->getName()).'" title="'.$this->escapeHtml($_category->getName()).'" /></p>';
+        $_imgHtml = $_helper->categoryAttribute($_category, $_imgHtml, 'image');
+    }
+?>
+<?php echo $this->getMessagesBlock()->toHtml() ?>
+<div class="category-view">
+    <?php if($_imgUrl): ?>
+        <?php echo $_imgHtml ?>
     <?php endif; ?>
-    <?php echo $this->getProductListHtml() ?>
+
+    <?php if($_description=$this->getCurrentCategory()->getDescription()): ?>
+        <div class="category-description std">
+            <?php echo $_helper->categoryAttribute($_category, $_description, 'description') ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if($this->isContentMode()): ?>
+        <?php echo $_categoryTitle ?>
+        <?php echo $this->getCmsBlockHtml() ?>
+
+    <?php elseif($this->isMixedMode()): ?>
+        <?php echo $this->getCmsBlockHtml() ?>
+        <?php echo $_categoryTitle ?>
+        <?php echo $this->getProductListHtml() ?>
+
+    <?php else: ?>
+        <?php echo $_categoryTitle ?>
+        <?php echo $this->getProductListHtml() ?>
+    <?php endif; ?>
 </div>

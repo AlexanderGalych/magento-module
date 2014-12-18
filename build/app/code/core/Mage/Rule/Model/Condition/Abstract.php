@@ -20,14 +20,17 @@
  *
  * @category    Mage
  * @package     Mage_Rule
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 
 /**
- * Abstract class for quote rule condition
+ * Abstract Rule condition data model
  *
+ * @category Mage
+ * @package Mage_Rule
+ * @author Magento Core Team <core@magentocommerce.com>
  */
 abstract class Mage_Rule_Model_Condition_Abstract
     extends Varien_Object
@@ -51,6 +54,12 @@ abstract class Mage_Rule_Model_Condition_Abstract
      * @var array
      */
     protected $_defaultOperatorInputByType = null;
+
+    /**
+     * List of input types for values which should be array
+     * @var array
+     */
+    protected $_arrayInputTypes = array();
 
     public function __construct()
     {
@@ -79,9 +88,11 @@ abstract class Mage_Rule_Model_Condition_Abstract
                 'numeric'     => array('==', '!=', '>=', '>', '<=', '<', '()', '!()'),
                 'date'        => array('==', '>=', '<='),
                 'select'      => array('==', '!='),
-                'multiselect' => array('==', '!=', '{}', '!{}'),
+                'boolean'     => array('==', '!='),
+                'multiselect' => array('{}', '!{}', '()', '!()'),
                 'grid'        => array('()', '!()'),
             );
+            $this->_arrayInputTypes = array('multiselect', 'grid');
         }
         return $this->_defaultOperatorInputByType;
     }
@@ -212,9 +223,9 @@ abstract class Mage_Rule_Model_Condition_Abstract
         $type = $this->getInputType();
         $opt = array();
         $operatorByType = $this->getOperatorByInputType();
-        foreach ($this->getOperatorOption() as $k=>$v) {
+        foreach ($this->getOperatorOption() as $k => $v) {
             if (!$operatorByType || in_array($k, $operatorByType[$type])) {
-                $opt[] = array('value'=>$k, 'label'=>$v);
+                $opt[] = array('value' => $k, 'label' => $v);
             }
         }
         return $opt;
@@ -237,32 +248,54 @@ abstract class Mage_Rule_Model_Condition_Abstract
 
     public function getValueSelectOptions()
     {
-        $opt = array();
-        foreach ($this->getValueOption() as $k=>$v) {
-            $opt[] = array('value'=>$k, 'label'=>$v);
+        $valueOption = $opt = array();
+        if ($this->hasValueOption()) {
+            $valueOption = (array) $this->getValueOption();
+        }
+        foreach ($valueOption as $k => $v) {
+            $opt[] = array('value' => $k, 'label' => $v);
         }
         return $opt;
     }
 
+    /**
+     * Retrieve parsed value
+     *
+     * @return array|string|int|float
+     */
     public function getValueParsed()
     {
-        $value = $this->getData('value');
-
-        $op = $this->getOperator();
-        if (($op==='()' || $op==='!()') && is_string($value)) {
-            $value = preg_split('#\s*[,;]\s*#', $value, null, PREG_SPLIT_NO_EMPTY);
-            $this->setValue($value);
+        if (!$this->hasValueParsed()) {
+            $value = $this->getData('value');
+            if ($this->isArrayOperatorType() && is_string($value)) {
+                $value = preg_split('#\s*[,;]\s*#', $value, null, PREG_SPLIT_NO_EMPTY);
+            }
+            $this->setValueParsed($value);
         }
+        return $this->getData('value_parsed');
+    }
 
-        return $value;
+    /**
+     * Check if value should be array
+     *
+     * Depends on operator input type
+     *
+     * @return bool
+     */
+    public function isArrayOperatorType()
+    {
+        $op = $this->getOperator();
+        return $op === '()' || $op === '!()' || in_array($this->getInputType(), $this->_arrayInputTypes);
     }
 
     public function getValue()
     {
         if ($this->getInputType()=='date' && !$this->getIsValueParsed()) {
             // date format intentionally hard-coded
-            $this->setValue(Mage::app()->getLocale()->date($this->getData('value'), Varien_Date::DATE_INTERNAL_FORMAT, null, false)
-                ->toString(Varien_Date::DATE_INTERNAL_FORMAT));
+            $this->setValue(
+                Mage::app()->getLocale()->date($this->getData('value'),
+                Varien_Date::DATE_INTERNAL_FORMAT, null, false)->toString(Varien_Date::DATE_INTERNAL_FORMAT)
+            );
             $this->setIsValueParsed(true);
         }
         return $this->getData('value');
@@ -271,7 +304,7 @@ abstract class Mage_Rule_Model_Condition_Abstract
     public function getValueName()
     {
         $value = $this->getValue();
-        if (is_null($value) || ''===$value) {
+        if (is_null($value) || '' === $value) {
             return '...';
         }
 
@@ -291,7 +324,7 @@ abstract class Mage_Rule_Model_Condition_Abstract
                             }
                         }
                     }
-                    if ($o['value']==$value) {
+                    if ($o['value'] == $value) {
                         return $o['label'];
                     }
                 }
@@ -303,6 +336,11 @@ abstract class Mage_Rule_Model_Condition_Abstract
         return $value;
     }
 
+    /**
+     * Get inherited conditions selectors
+     *
+     * @return array
+     */
     public function getNewChildSelectOptions()
     {
         return array(
@@ -334,11 +372,11 @@ abstract class Mage_Rule_Model_Condition_Abstract
 
     public function getTypeElement()
     {
-        return $this->getForm()->addField($this->getPrefix().'__'.$this->getId().'__type', 'hidden', array(
-            'name'=>'rule['.$this->getPrefix().']['.$this->getId().'][type]',
-            'value'=>$this->getType(),
-            'no_span'=>true,
-            'class' => 'hidden',
+        return $this->getForm()->addField($this->getPrefix() . '__' . $this->getId() . '__type', 'hidden', array(
+            'name'    => 'rule[' . $this->getPrefix() . '][' . $this->getId() . '][type]',
+            'value'   => $this->getType(),
+            'no_span' => true,
+            'class'   => 'hidden',
         ));
     }
 
@@ -350,7 +388,7 @@ abstract class Mage_Rule_Model_Condition_Abstract
     public function getAttributeElement()
     {
         if (is_null($this->getAttribute())) {
-            foreach ($this->getAttributeOption() as $k=>$v) {
+            foreach ($this->getAttributeOption() as $k => $v) {
                 $this->setAttribute($k);
                 break;
             }
@@ -450,14 +488,14 @@ abstract class Mage_Rule_Model_Condition_Abstract
     public function getAddLinkHtml()
     {
         $src = Mage::getDesign()->getSkinUrl('images/rule_component_add.gif');
-        $html = '<img src="'.$src.'" class="rule-param-add v-middle" alt="" title="'.Mage::helper('rule')->__('Add').'"/>';
+        $html = '<img src="' . $src . '" class="rule-param-add v-middle" alt="" title="' . Mage::helper('rule')->__('Add') . '"/>';
         return $html;
     }
 
     public function getRemoveLinkHtml()
     {
         $src = Mage::getDesign()->getSkinUrl('images/rule_component_remove.gif');
-        $html = ' <span class="rule-param"><a href="javascript:void(0)" class="rule-param-remove" title="'.Mage::helper('rule')->__('Remove').'"><img src="'.$src.'"  alt="" class="v-middle" /></a></span>';
+        $html = ' <span class="rule-param"><a href="javascript:void(0)" class="rule-param-remove" title="' . Mage::helper('rule')->__('Remove') . '"><img src="' . $src . '"  alt="" class="v-middle" /></a></span>';
         return $html;
     }
 
@@ -466,20 +504,20 @@ abstract class Mage_Rule_Model_Condition_Abstract
         $url = $this->getValueElementChooserUrl();
         $html = '';
         if ($url) {
-            $html = '<div class="rule-chooser" url="'.$url.'"></div>';
+            $html = '<div class="rule-chooser" url="' . $url . '"></div>';
         }
         return $html;
     }
 
-    public function asString($format='')
+    public function asString($format = '')
     {
-        $str = $this->getAttributeName().' '.$this->getOperatorName().' '.$this->getValueName();
+        $str = $this->getAttributeName() . ' ' . $this->getOperatorName() . ' ' . $this->getValueName();
         return $str;
     }
 
     public function asStringRecursive($level=0)
     {
-        $str = str_pad('', $level*3, ' ', STR_PAD_LEFT).$this->asString();
+        $str = str_pad('', $level * 3, ' ', STR_PAD_LEFT) . $this->asString();
         return $str;
     }
 
@@ -503,11 +541,10 @@ abstract class Mage_Rule_Model_Condition_Abstract
         /**
          * Comparison operator
          */
-        $op = $this->getOperator();
+        $op = $this->getOperatorForValidate();
 
         // if operator requires array and it is not, or on opposite, return false
-        if ((($op=='()' || $op=='!()') && !is_array($value))
-            || (!($op=='()' || $op=='!()' || $op=='!=' || $op=='==' || $op=='{}' || $op=='!{}') && is_array($value))) {
+        if ($this->isArrayOperatorType() xor is_array($value)) {
             return false;
         }
 
@@ -517,8 +554,48 @@ abstract class Mage_Rule_Model_Condition_Abstract
             case '==': case '!=':
                 if (is_array($value)) {
                     if (is_array($validatedValue)) {
-                        $result = array_diff($validatedValue, $value);
-                        $result = empty($result) && (sizeof($validatedValue) == sizeof($value));
+                        $result = array_intersect($value, $validatedValue);
+                        $result = !empty($result);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    if (is_array($validatedValue)) {
+                        $result = count($validatedValue) == 1 && array_shift($validatedValue) == $value;
+                    } else {
+                        $result = $this->_compareValues($validatedValue, $value);
+                    }
+                }
+                break;
+
+            case '<=': case '>':
+                if (!is_scalar($validatedValue)) {
+                    return false;
+                } else {
+                    $result = $validatedValue <= $value;
+                }
+                break;
+
+            case '>=': case '<':
+                if (!is_scalar($validatedValue)) {
+                    return false;
+                } else {
+                    $result = $validatedValue >= $value;
+                }
+                break;
+
+            case '{}': case '!{}':
+                if (is_scalar($validatedValue) && is_array($value)) {
+                    foreach ($value as $item) {
+                        if (stripos($validatedValue,$item)!==false) {
+                            $result = true;
+                            break;
+                        }
+                    }
+                } elseif (is_array($value)) {
+                    if (is_array($validatedValue)) {
+                        $result = array_intersect($value, $validatedValue);
+                        $result = !empty($result);
                     } else {
                         return false;
                     }
@@ -526,40 +603,7 @@ abstract class Mage_Rule_Model_Condition_Abstract
                     if (is_array($validatedValue)) {
                         $result = in_array($value, $validatedValue);
                     } else {
-                        $result = $validatedValue==$value;
-                    }
-                }
-                break;
-
-            case '<=': case '>':
-                if (is_array($validatedValue) || is_null($validatedValue)) {
-                    $result = false;
-                } else {
-                    $result = $validatedValue<=$value;
-                }
-                break;
-
-            case '>=': case '<':
-                if (is_array($validatedValue) || is_null($validatedValue)) {
-                    $result = false;
-                } else {
-                    $result = $validatedValue>=$value;
-                }
-                break;
-
-            case '{}': case '!{}':
-                if (is_array($value)) {
-                    if (is_array($validatedValue)) {
-                        $result = array_diff($value, $validatedValue);
-                        $result = empty($result);
-                    } else {
-                        return false;
-                    }
-                } else {
-                    if (is_array($validatedValue)) {
-                        $result = false;
-                    } else {
-                        $result = stripos((string)$validatedValue, (string)$value)!==false;
+                        $result = $this->_compareValues($value, $validatedValue, false);
                     }
                 }
                 break;
@@ -568,20 +612,56 @@ abstract class Mage_Rule_Model_Condition_Abstract
                 if (is_array($validatedValue)) {
                     $result = count(array_intersect($validatedValue, (array)$value))>0;
                 } else {
-                    $result = in_array($validatedValue, (array)$value);
+                    $value = (array)$value;
+                    foreach ($value as $item) {
+                        if ($this->_compareValues($validatedValue, $item)) {
+                            $result = true;
+                            break;
+                        }
+                    }
                 }
                 break;
         }
 
-        if ('!='==$op || '>'==$op || '<'==$op || '!{}'==$op || '!()'==$op) {
+        if ('!=' == $op || '>' == $op || '<' == $op || '!{}' == $op || '!()' == $op) {
             $result = !$result;
         }
 
         return $result;
     }
 
+    /**
+     * Case and type insensitive comparison of values
+     *
+     * @param  string|int|float $validatedValue
+     * @param  string|int|float $value
+     * @return bool
+     */
+    protected function _compareValues($validatedValue, $value, $strict = true)
+    {
+        if ($strict && is_numeric($validatedValue) && is_numeric($value)) {
+            return $validatedValue == $value;
+        } else {
+            $validatePattern = preg_quote($validatedValue, '~');
+            if ($strict) {
+                $validatePattern = '^' . $validatePattern . '$';
+            }
+            return (bool)preg_match('~' . $validatePattern . '~iu', $value);
+        }
+    }
+
     public function validate(Varien_Object $object)
     {
         return $this->validateAttribute($object->getData($this->getAttribute()));
+    }
+
+    /**
+     * Retrieve operator for php validation
+     *
+     * @return string
+     */
+    public function getOperatorForValidate()
+    {
+        return $this->getOperator();
     }
 }
