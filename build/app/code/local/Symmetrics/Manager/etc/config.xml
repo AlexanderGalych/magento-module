@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * @category  Symmetrics
+ * @package   Symmetrics_Manager
+ * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
+ * @author    Alex Galych <aleksandr.galych@symmetrics.de>
+ * @copyright 2014 symmetrics - a CGI Group brand
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @link      http://www.symmetrics.de/
+ */
+
+/**
+ * Symmetrics_Manager module configuration
+ *
+ * @category  Symmetrics
+ * @package   Symmetrics_Manager
+ * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
+ * @author    Alex Galych <aleksandr.galych@symmetrics.de>
+ * @copyright 2014 symmetrics - a CGI Group brand
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @link      http://www.symmetrics.de/
+ */
+-->
+<config>
+    <modules>
+        <Symmetrics_Manager>
+            <version>0.0.3</version>
+        </Symmetrics_Manager>
+    </modules>
+    <global>
+        <models>
+            <manager>
+                <class>Symmetrics_Manager_Model</class>
+                <resourceModel>manager_resource</resourceModel>
+            </manager>
+            <manager_resource>
+                <class>Symmetrics_Manager_Model_Resource</class>
+                <entities>
+                    <worker_entry>
+                        <table>symmetrics_worker_entry</table>
+                    </worker_entry>
+                </entities>
+            </manager_resource>
+        </models>
+        <helpers>
+            <manager>
+                <class>Symmetrics_Manager_Helper</class>
+            </manager>
+        </helpers>
+        <blocks>
+            <manager>
+                <class>Symmetrics_Manager_Block</class>
+            </manager>
+        </blocks>
+        <resources>
+            <manager_setup>
+                <setup>
+                    <module>Symmetrics_Manager</module>
+                    <class>Symmetrics_Manager_Model_Setup</class>
+                </setup>
+            </manager_setup>
+        </resources>
+    </global>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <Symmetrics_Manager before="Mage_Adminhtml">Symmetrics_Manager_Adminhtml</Symmetrics_Manager>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+    <adminhtml>
+        <layout>
+            <updates>
+                <manager>
+                    <file>manager.xml</file>
+                </manager>
+            </updates>
+        </layout>
+    </adminhtml>
+    <default>
+        <callback_function>
+            <not_defined>Not Selected</not_defined>
+            <callback1>manage/callback_callback1</callback1>
+            <callback2>manage/callback_callback2</callback2>
+        </callback_function>
+        <manager>
+            <general>
+                <workers_number>0</workers_number>
+            </general>
+        </manager>
+    </default>
+    <crontab>
+        <jobs>
+            <manage_php_workers>
+                <schedule>
+                    <cron_expr>always</cron_expr>
+                </schedule>
+                <run>
+                    <model>manager/observer::manageWorkersScripts</model>
+                </run>
+            </manage_php_workers>
+        </jobs>
+    </crontab>
+</config>

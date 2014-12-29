@@ -84,4 +84,9 @@ $mageRunCode = isset($_SERVER['MAGE_RUN_CODE']) ? $_SERVER['MAGE_RUN_CODE'] : ''
 /* Run store or run website */
 $mageRunType = isset($_SERVER['MAGE_RUN_TYPE']) ? $_SERVER['MAGE_RUN_TYPE'] : 'store';
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 Mage::run($mageRunCode, $mageRunType);
+Mage::setIsDeveloperMode(true);
+var_dump(Mage::getSingleton('core/layout')->getUpdate()->getHandles());

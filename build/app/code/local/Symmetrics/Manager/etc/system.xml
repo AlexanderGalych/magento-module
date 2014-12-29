@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * @category  Symmetrics
+ * @package   Symmetrics_Manager
+ * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
+ * @author    Alex Galych <aleksandr.galych@symmetrics.de>
+ * @copyright 2014 symmetrics - a CGI Group brand
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @link      http://www.symmetrics.de/
+ */
+
+/**
+ * Symmetrics_Manager module configuration
+ *
+ * @category  Symmetrics
+ * @package   Symmetrics_Manager
+ * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
+ * @author    Alex Galych <aleksandr.galych@symmetrics.de>
+ * @copyright 2014 symmetrics - a CGI Group brand
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @link      http://www.symmetrics.de/
+ */
+-->
+<config>
+    <tabs>
+        <manager>
+            <label>Worker's Manager</label>
+            <sort_order>175</sort_order>
+        </manager>
+    </tabs>
+    <sections>
+        <manager translate="label">
+            <label>Worker's Manager</label>
+            <tab>manager</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>1100</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>0</show_in_store>
+            <groups>
+                <general translate="label">
+                    <label>Workers</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>100</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <fields>
+                        <workers_number translate="label">
+                            <label>Number of workers</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </workers_number>
+                    </fields>
+                </general>
+            </groups>
+        </manager>
+    </sections>
+</config>
