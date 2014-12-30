@@ -71,7 +71,7 @@ if (!$installer->getConnection()
         array(
             'nullable' => false,
         ),
-        'Social Network'
+        'Callback function'
     );
     $table->addColumn(
         'description',

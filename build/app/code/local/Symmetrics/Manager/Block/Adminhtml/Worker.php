@@ -41,7 +41,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker extends Mage_Adminhtml_Block_Wid
     {
         $this->_blockGroup = 'manager';
         $this->_controller = 'adminhtml_worker';
-        $this->_headerText = Mage::helper('index')->__('Workers Management');
+        $this->_headerText = Mage::helper('manager')->__('Workers Management');
         parent::__construct();
         $this->_removeButton('add');
     }

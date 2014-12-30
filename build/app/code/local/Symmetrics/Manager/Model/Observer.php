@@ -46,53 +46,12 @@ class Symmetrics_Manager_Model_Observer extends Mage_Core_Model_Abstract
         $workersNumber = (int) Mage::getStoreConfig('manager/general/workers_number');
         $workersCollection = Mage::getModel('manager/worker')->getCollection();
         $delta = $workersCollection->getSize() - $workersNumber;
-        $callbackFunctions = Mage::getStoreConfig('callback_function');
 
         foreach ($workersCollection as $worker) {
-            $isChanged = false;
-            switch ($worker->getStatus()) {
-                case Symmetrics_Manager_Model_Worker::STATUS_RUNNING:
-                    if (!$worker->getPid()) {
-                        $worker->setPid(Mage::getModel('manager/worker')->addWorker());
-                        $isChanged = true;
-                    }
-                    break;
-                case Symmetrics_Manager_Model_Worker::STATUS_STOPPED:
-                    if ($worker->getPid()) {
-                        $worker->killWorker($worker->getPid());
-                        $isChanged = true;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-            if ($isChanged) {
-                $worker->save();
-            }
+            $worker->manageWorkerState();
         }
-
-        if ($delta < 0) {
-            while ($delta < 0) {
-                $worker = Mage::getModel('manager/worker');
-                $worker->setData(
-                    array(
-                        'callback' => (count($callbackFunctions)) ? key($callbackFunctions) : 'not defined',
-                        'status' => Symmetrics_Manager_Model_Worker::STATUS_CREATED,
-                    )
-                );
-                $worker->save();
-                $delta++;
-            }
-        } elseif ($delta > 0) {
-            $collection = Mage::getModel('manager/worker')->getCollection()
-                ->setOrder('status', 'ASC')
-                ->setCurPage(0)
-                ->setPageSize($delta);
-            foreach ($collection as $worker) {
-                $worker->killWorker($worker->getPid());
-                $worker->delete();
-            }
+        if ($delta) {
+            Mage::helper('manager')->manageWorkersQuantity($delta);
         }
     }
 }

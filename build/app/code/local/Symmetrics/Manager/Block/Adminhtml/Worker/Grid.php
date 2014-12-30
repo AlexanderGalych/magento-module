@@ -85,98 +85,99 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
     {
         $this->addColumn(
             'entry_id', array(
-                'header'    => Mage::helper('manager')->__('Worker Id'),
-                'width'     => '180',
-                'align'     => 'left',
-                'index'     => 'entry_id',
-                'sortable'  => true,
+                'header' => Mage::helper('manager')->__('Worker Id'),
+                'width' => '180',
+                'align' => 'left',
+                'index' => 'entry_id',
+                'sortable' => true,
             )
         );
 
-
         $this->addColumn(
             'pid', array(
-                'header'    => Mage::helper('manager')->__('Process Id'),
-                'sortable'  => true,
-                'width'     => '120',
-                'align'     => 'left',
-                'index'     => 'pid',
+                'header' => Mage::helper('manager')->__('Process Id'),
+                'sortable' => true,
+                'width' => '120',
+                'align' => 'left',
+                'index' => 'pid',
             )
         );
 
         $this->addColumn(
             'callback', array(
-                'header'    => Mage::helper('manager')->__('Callback'),
-                'align'     => 'left',
-                'index'     => 'callback',
-                'sortable'  => false,
+                'header' => Mage::helper('manager')->__('Callback'),
+                'align' => 'left',
+                'index' => 'callback',
+                'sortable' => false,
             )
         );
 
         $this->addColumn(
             'description', array(
-                'header'    => Mage::helper('manager')->__('Description'),
-                'align'     => 'left',
-                'index'     => 'description',
-                'sortable'  => false,
+                'header' => Mage::helper('manager')->__('Description'),
+                'align' => 'left',
+                'index' => 'description',
+                'sortable' => false,
             )
         );
 
         $this->addColumn(
             'status', array(
-                'header'    => Mage::helper('manager')->__('Status'),
-                'width'     => '120',
-                'align'     => 'left',
-                'index'     => 'status',
-                'type'      => 'options',
-                'options'   => 'status',
+                'header' => Mage::helper('manager')->__('Status'),
+                'width' => '120',
+                'align' => 'left',
+                'index' => 'status',
+                'type' => 'options',
+                'options' => 'status',
                 'frame_callback' => array($this, 'decorateStatus')
             )
         );
 
+        $dateFormat = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
         $this->addColumn(
             'creation_time', array(
-                'header'    => Mage::helper('manager')->__('Created At'),
-                'type'      => 'datetime',
-                'width'     => '180',
-                'align'     => 'left',
-                'index'     => 'creation_time',
+                'header' => Mage::helper('manager')->__('Created At'),
+                'type' => 'date',
+                'format' => $dateFormat,
+                'width' => '180',
+                'align' => 'left',
+                'index' => 'creation_time',
                 'frame_callback' => array($this, 'decorateDate')
             )
         );
 
         $this->addColumn(
             'end_time', array(
-                'header'    => Mage::helper('manager')->__('End Date'),
-                'type'      => 'datetime',
-                'width'     => '180',
-                'align'     => 'left',
-                'index'     => 'end_time',
+                'header' => Mage::helper('manager')->__('End Date'),
+                'type' => 'date',
+                'format' => $dateFormat,
+                'width' => '180',
+                'align' => 'left',
+                'index' => 'end_time',
                 'frame_callback' => array($this, 'decorateDate')
             )
         );
 
         $this->addColumn(
             'action', array(
-                'header'    =>  Mage::helper('manager')->__('Action'),
-                'width'     => '100',
-                'type'      => 'action',
-                'getter'    => 'getId',
-                'actions'   => array(
+                'header' => Mage::helper('manager')->__('Action'),
+                'width' => '100',
+                'type' => 'action',
+                'getter' => 'getId',
+                'actions' => array(
                     array(
-                        'caption'   => Mage::helper('index')->__('Edit Data'),
-                        'url'       => array('base'=> '*/*/edit'),
-                        'field'     => 'worker'
+                        'caption' => Mage::helper('index')->__('Edit Data'),
+                        'url' => array('base'=> '*/*/edit'),
+                        'field' => 'worker'
                     ),
                 ),
-                'filter'    => false,
-                'sortable'  => false,
+                'filter' => false,
+                'sortable' => false,
                 'is_system' => true,
             )
         );
 
         parent::_prepareColumns();
-
         return $this;
     }
 

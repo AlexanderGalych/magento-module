@@ -54,6 +54,10 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      * Process status created.
      */
     const STATUS_CREATED = 0;
+    /**
+     * Path to worker log file.
+     */
+    const LOG_FILE_PATH = '/var/www/rabbitmq/php/logs/processor_%PID%_log.txt';
 
     /**
      * Constructor for Model Social.
@@ -67,30 +71,67 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Add worker to system.
+     * Add worker to system and set PID.
      *
-     * @return string
+     * @return void
      */
     public function addWorker()
     {
-        return exec('php /var/www/rabbitmq/php/processor.php > /dev/null 2>/dev/null &  echo $!');
+        $this->setPid(exec('php /var/www/rabbitmq/php/processor.php > /dev/null 2>/dev/null &  echo $!'));
     }
 
     /**
-     * Delete worker script from system.
+     * Delete worker script from system by PID.
      *
-     * @param Symmetrics_Manager_Model_Worker $pid Worker process id.
-     *
-     * @return bool
+     * @return void
      */
-    public function killWorker($pid)
+    public function killWorker()
     {
-        $result = false;
-        if ($pid && posix_kill($pid, 9)) {
-            unlink('/var/www/rabbitmq/php/logs/processor_' . $pid . '_log.txt');
-            $result = true;
-            $this->pid = null;
+        if ($this->pid && posix_kill($this->pid, 9)) {
+            unlink(str_replace('%PID%', $this->pid, self::LOG_FILE_PATH));
         }
-        return $result;
+        $this->pid = null;
+        $this->status = Symmetrics_Manager_Model_Worker::STATUS_STOPPED;
+    }
+
+    /**
+     * Manage worker state by cron.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function manageWorkerState()
+    {
+        $isChanged = false;
+        $shouldDieNow = strtotime($this->getEndTime()) < strtotime(Mage::getModel('core/date')->date('Y-m-d H:i:s'));
+
+        if ($this->getStatus() != Symmetrics_Manager_Model_Worker::STATUS_STOPPED
+            && $this->getEndTime() && $shouldDieNow
+        ) {
+            $this->killWorker();
+            $isChanged = true;
+        } else {
+            switch ($this->getStatus()) {
+                case Symmetrics_Manager_Model_Worker::STATUS_RUNNING:
+                    if ($this->getEndTime()) {
+                        $this->addWorker();
+                        $isChanged = true;
+                    }
+                    break;
+                case Symmetrics_Manager_Model_Worker::STATUS_STOPPED:
+                    if ($this->getPid()) {
+                        $this->killWorker();
+                        $isChanged = true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        if ($isChanged) {
+            $this->save();
+        }
     }
 }

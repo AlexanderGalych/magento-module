@@ -44,6 +44,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
     protected function _prepareForm()
     {
         $model = Mage::registry('current_worker');
+        $dateFormat = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
         $form = new Varien_Data_Form();
         $form->setHtmlIdPrefix('manage_worker_');
         $fieldSet = $form->addFieldset(
@@ -64,8 +65,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
         $fieldSet->addField(
             'description', 'text',
             array(
-                'label' => Mage::helper('manager')->__('Index Description'),
-                'title' => Mage::helper('manager')->__('Index Description'),
+                'label' => Mage::helper('manager')->__('Worker Description'),
+                'title' => Mage::helper('manager')->__('Worker Description'),
                 'name'  => 'description',
                 'value' => $model->getDescription()
             )
@@ -93,7 +94,20 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
             )
         );
 
-        //$form->setValues($model->getData());
+        $fieldSet->addField(
+            'end_time', 'date',
+            array(
+                'label' => Mage::helper('manager')->__('Stop date'),
+                'title' => Mage::helper('manager')->__('Stop date'),
+                'name'  => 'end_time',
+                'value' => $model->getEndTime(),
+                'input_format' => $dateFormat,
+                'format' => $dateFormat,
+                'image' => $this->getSkinUrl('images/grid-cal.gif'),
+                'time' => true,
+            )
+        );
+
         $this->setForm($form);
         return parent::_prepareForm();
     }

@@ -35,7 +35,7 @@
 class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Controller_Action
 {
     /**
-     * Initialize process object by request.
+     * Initialize worker object by request.
      *
      * @return Mage_Index_Model_Process|false
      */
@@ -67,7 +67,7 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
     }
 
     /**
-     * Process detail and edit action.
+     * Worker detail and edit action.
      *
      * @return void
      */
@@ -87,14 +87,14 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
             $this->renderLayout();
         } else {
             $this->_getSession()->addError(
-                Mage::helper('index')->__('Cannot initialize the worker process.')
+                Mage::helper('manager')->__('Cannot initialize the worker process.')
             );
             $this->_redirect('*/*/list');
         }
     }
 
     /**
-     * Save process data.
+     * Save worker data.
      *
      * @return void
      */
