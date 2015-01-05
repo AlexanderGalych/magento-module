@@ -39,7 +39,7 @@
         <system>
             <children>
                 <manager translate="title" module="manager">
-                    <title>Worker Management</title>
+                    <title>Workers Management</title>
                     <action>adminhtml/worker/list</action>
                     <sort_order>93</sort_order>
                 </manager>
@@ -52,16 +52,8 @@
                 <children>
                     <system>
                         <children>
-                            <config>
-                                <children>
-                                    <manager>
-                                        <title>Worker's Manager</title>
-                                        <sort_order>100</sort_order>
-                                    </manager>
-                                </children>
-                            </config>
                             <manager translate="title">
-                                <title>Worker Management</title>
+                                <title>Workers Management</title>
                             </manager>
                         </children>
                     </system>

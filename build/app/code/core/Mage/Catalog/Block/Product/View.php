@@ -49,11 +49,6 @@ class Mage_Catalog_Block_Product_View extends Mage_Catalog_Block_Product_Abstrac
      */
     protected function _prepareLayout()
     {
-
-        $observer = new Symmetrics_Manager_Model_Observer;
-        $observer->manageWorkersScripts();
-        die;
-
         $this->getLayout()->createBlock('catalog/breadcrumbs');
         $headBlock = $this->getLayout()->getBlock('head');
         if ($headBlock) {
@@ -80,7 +75,6 @@ class Mage_Catalog_Block_Product_View extends Mage_Catalog_Block_Product_Abstrac
                 $headBlock->addLinkRel('canonical', $product->getUrlModel()->getUrl($product, $params));
             }
         }
-
         return parent::_prepareLayout();
     }
 

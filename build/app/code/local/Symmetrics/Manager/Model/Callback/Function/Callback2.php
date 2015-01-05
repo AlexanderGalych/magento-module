@@ -22,7 +22,7 @@
  */
 
 /**
- * Symmetrics Manager Adminhtml Worker Block class.
+ * Callback2 function class.
  *
  * @category  Symmetrics
  * @package   Symmetrics_Manager
@@ -32,16 +32,29 @@
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
-class Symmetrics_Manager_Block_Adminhtml_Worker extends Mage_Adminhtml_Block_Widget_Grid_Container
+class Symmetrics_Manager_Model_Callback_Function_Callback2
+    implements Symmetrics_Manager_Model_Callback_Function_Interface
 {
     /**
-     * Init block data.
+     * Execute callback2 function.
      */
-    public function __construct()
+    public function execute()
     {
-        $this->_blockGroup = 'manager';
-        $this->_controller = 'adminhtml_worker';
-        $this->_headerText = Mage::helper('manager')->__('Workers Management');
-        parent::__construct();
+        $myFile = fopen("/var/www/demo_ce_1411/build/var/workers/processor_" . getmypid() . "_log.txt", "w");
+        $urlReceive = 'http://rabbitmq.api.local/api/v1/receive';
+
+        fwrite($myFile, 'php processor pid: ' . getmypid()  . "\n\n");
+
+        while (1) {
+            $ch = curl_init();
+            curl_setopt($ch,CURLOPT_URL, $urlReceive);
+            curl_setopt($ch,CURLOPT_POST, 0);
+            $result = curl_exec($ch);
+            curl_close ( $ch );
+            fwrite($myFile, 'Retrieve message: "' . implode(' | ', $result) . '"' . "\n");
+            sleep(mt_rand(1, 10));
+        }
+        fclose($myFile);
+        return true;
     }
 }

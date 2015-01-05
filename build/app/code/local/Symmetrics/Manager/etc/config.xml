@@ -73,6 +73,17 @@
                 </setup>
             </manager_setup>
         </resources>
+        <events>
+            <manager_worker_save_after>
+                <observers>
+                    <manager>
+                        <type>singleton</type>
+                        <class>manager/observer</class>
+                        <method>managerWorkerAfterSave</method>
+                    </manager>
+                </observers>
+            </manager_worker_save_after>
+        </events>
     </global>
     <admin>
         <routers>
@@ -97,14 +108,9 @@
     <default>
         <callback_function>
             <not_defined>Not Selected</not_defined>
-            <callback1>manage/callback_callback1</callback1>
-            <callback2>manage/callback_callback2</callback2>
+            <callback1>manager/callback_function_callback1</callback1>
+            <callback2>manager/callback_function_callback2</callback2>
         </callback_function>
-        <manager>
-            <general>
-                <workers_number>0</workers_number>
-            </general>
-        </manager>
     </default>
     <crontab>
         <jobs>

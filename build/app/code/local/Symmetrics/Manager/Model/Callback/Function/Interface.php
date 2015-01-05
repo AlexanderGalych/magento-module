@@ -22,7 +22,7 @@
  */
 
 /**
- * Callback2 function class.
+ * Interface class for Callback functions.
  *
  * @category  Symmetrics
  * @package   Symmetrics_Manager
@@ -32,3 +32,12 @@
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
+interface Symmetrics_Manager_Model_Callback_Function_Interface
+{
+    /**
+     * Run callback function.
+     *
+     * @return bool
+     */
+    public function execute();
+}

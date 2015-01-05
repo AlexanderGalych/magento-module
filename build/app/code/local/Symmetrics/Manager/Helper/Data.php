@@ -61,39 +61,4 @@ class Symmetrics_Manager_Helper_Data extends Mage_Core_Helper_Abstract
         $callbackFunctions = Mage::getStoreConfig('callback_function');
         return $callbackFunctions;
     }
-
-    /**
-     * Manage workers quantity by config value.
-     *
-     * @param int $delta Number of workers diff.
-     *
-     * @return void
-     *
-     * @throws Exception
-     */
-    public function manageWorkersQuantity($delta)
-    {
-        $callbackFunctions = Mage::getStoreConfig('callback_function');
-        if ($delta < 0) {
-            while ($delta < 0) {
-                $worker = Mage::getModel('manager/worker');
-                $worker->setData(
-                    array(
-                        'callback' => (count($callbackFunctions)) ? key($callbackFunctions) : 'not defined',
-                        'status' => Symmetrics_Manager_Model_Worker::STATUS_CREATED,
-                    )
-                )->save();
-                $delta++;
-            }
-        } elseif ($delta > 0) {
-            $collection = Mage::getModel('manager/worker')->getCollection()
-                ->setOrder('status', 'ASC')
-                ->setCurPage(0)
-                ->setPageSize($delta);
-            foreach ($collection as $worker) {
-                $worker->killWorker();
-                $worker->delete();
-            }
-        }
-    }
 }

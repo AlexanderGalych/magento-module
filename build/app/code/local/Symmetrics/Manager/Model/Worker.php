@@ -57,7 +57,24 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     /**
      * Path to worker log file.
      */
-    const LOG_FILE_PATH = '/var/www/rabbitmq/php/logs/processor_%PID%_log.txt';
+    const LOG_FILE_PATH = '/var/www/demo_ce_1411/build/var/workers/processor_%PID%_log.txt';
+    /**
+     * Path to callback functions.
+     */
+    const WORKER_PATH = 'php /var/www/demo_ce_1411/build/shell/worker_manager/worker.php --callback = %CALLBACK% > /dev/null 2>/dev/null &  echo $!';
+
+    /**
+     * Prefix of model events names.
+     *
+     * @var string
+     */
+    protected $_eventPrefix = 'manager_worker';
+    /**
+     * Collection of available workers.
+     *
+     * @var null
+     */
+    protected $_workersCollection = null;
 
     /**
      * Constructor for Model Social.
@@ -71,13 +88,43 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Get collection of all available workers.
+     *
+     * @return Symmetrics_Manager_Model_Resource_Worker_Collection
+     */
+    public function getWorkersCollection()
+    {
+        if (is_null($this->_workersCollection)) {
+            $this->_workersCollection = Mage::getModel('manager/worker')->getCollection();
+        }
+        return $this->_workersCollection;
+    }
+
+    /**
+     * Get worker process by specific id
+     *
+     * @param int $workerId Worker proccess id.
+     *
+     * @return Symmetrics_Manager_Model_Worker|false
+     */
+    public function getWorkerById($workerId)
+    {
+        foreach ($this->getWorkersCollection() as $worker) {
+            if ($worker->getId() == $workerId) {
+                return $worker;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add worker to system and set PID.
      *
      * @return void
      */
     public function addWorker()
     {
-        $this->setPid(exec('php /var/www/rabbitmq/php/processor.php > /dev/null 2>/dev/null &  echo $!'));
+        $this->setPid(exec(str_replace('%CALLBACK%', $this->getCallback() , self::WORKER_PATH)));
     }
 
     /**
@@ -87,11 +134,51 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function killWorker()
     {
-        if ($this->pid && posix_kill($this->pid, 9)) {
-            unlink(str_replace('%PID%', $this->pid, self::LOG_FILE_PATH));
+        if ($this->getPid() && posix_kill($this->getPid(), 14)) {
+            unlink(str_replace('%PID%', $this->getPid(), self::LOG_FILE_PATH));
         }
-        $this->pid = null;
-        $this->status = Symmetrics_Manager_Model_Worker::STATUS_STOPPED;
+        $this->setPid(null);
+        $this->setStatus(self::STATUS_STOPPED);
+    }
+
+
+    /**
+     * Update workers statuses by ids.
+     *
+     * @param int   $status Selected worker status.
+     * @param array $ids    Workers ids.
+     *
+     * @return int
+     */
+    public function setWorkerStatusByIds($status, $ids)
+    {
+        /* @var $collection Symmetrics_Manager_Model_Resource_Worker_Collection */
+        $collection = Mage::getModel('manager/worker')->getCollection()
+            ->addFieldToFilter('entry_id', array('in' => $ids))
+            ->addFieldToFilter('status', array('neq' => $status));
+        foreach ($collection as $worker) {
+            $worker->setStatus($status);
+            $worker->setEndTime(null);
+        }
+        return $collection->save()->count();
+    }
+
+    /**
+     * Remove workers by ids.
+     *
+     * @param array $ids Workers ids.
+     *
+     * @return int
+     */
+    public function removeWorkersByIds($ids)
+    {
+        /* @var $collection Symmetrics_Manager_Model_Resource_Worker_Collection */
+        $collection = Mage::getModel('manager/worker')->getCollection()
+            ->addFieldToFilter('entry_id', array('in' => $ids));
+        foreach ($collection as $worker) {
+            $worker->delete();
+        }
+        return $collection->save()->count();
     }
 
     /**
@@ -106,26 +193,23 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
         $isChanged = false;
         $shouldDieNow = strtotime($this->getEndTime()) < strtotime(Mage::getModel('core/date')->date('Y-m-d H:i:s'));
 
-        if ($this->getStatus() != Symmetrics_Manager_Model_Worker::STATUS_STOPPED
-            && $this->getEndTime() && $shouldDieNow
-        ) {
+        if ($this->getStatus() != self::STATUS_STOPPED && $this->getEndTime() && $shouldDieNow) {
             $this->killWorker();
             $isChanged = true;
         } else {
             switch ($this->getStatus()) {
-                case Symmetrics_Manager_Model_Worker::STATUS_RUNNING:
-                    if ($this->getEndTime()) {
+                case self::STATUS_RUNNING:
+                    if (!$this->getPid()) {
                         $this->addWorker();
                         $isChanged = true;
                     }
                     break;
-                case Symmetrics_Manager_Model_Worker::STATUS_STOPPED:
+                case self::STATUS_STOPPED:
                     if ($this->getPid()) {
                         $this->killWorker();
                         $isChanged = true;
                     }
                     break;
-
                 default:
                     break;
             }

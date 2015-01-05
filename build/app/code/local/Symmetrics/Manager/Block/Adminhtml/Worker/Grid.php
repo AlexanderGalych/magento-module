@@ -49,7 +49,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         parent::__construct();
         $this->setId('manage_workers_grid');
         $this->_filterVisibility = false;
-        $this->_pagerVisibility  = false;
+        $this->_pagerVisibility = true;
     }
 
     /**
@@ -108,7 +108,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'header' => Mage::helper('manager')->__('Callback'),
                 'align' => 'left',
                 'index' => 'callback',
-                'sortable' => false,
+                'sortable' => true,
             )
         );
 
@@ -166,8 +166,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'getter' => 'getId',
                 'actions' => array(
                     array(
-                        'caption' => Mage::helper('index')->__('Edit Data'),
-                        'url' => array('base'=> '*/*/edit'),
+                        'caption' => Mage::helper('index')->__('Remove'),
+                        'url' => array('base'=> '*/*/remove'),
                         'field' => 'worker'
                     ),
                 ),
@@ -255,13 +255,27 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         $this->getMassactionBlock()->setFormFieldName('worker');
 
         $this->getMassactionBlock()->addItem(
-            'reindex', array(
-                'label'    => Mage::helper('index')->__('Something ToDo'),
-                'url'      => $this->getUrl('*/*/massReindex'),
+            'run', array(
+                'label'    => Mage::helper('index')->__('Run'),
+                'url'      => $this->getUrl('*/*/massStart'),
                 'selected' => true,
             )
         );
+        $this->getMassactionBlock()->addItem(
+            'stop', array(
+                'label'    => Mage::helper('index')->__('Stop'),
+                'url'      => $this->getUrl('*/*/massStop'),
+                'selected' => false,
+            )
+        );
 
+        $this->getMassactionBlock()->addItem(
+            'remove', array(
+                'label'    => Mage::helper('index')->__('Remove'),
+                'url'      => $this->getUrl('*/*/massRemove'),
+                'selected' => false,
+            )
+        );
         return $this;
     }
 }

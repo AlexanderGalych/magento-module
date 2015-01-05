@@ -43,15 +43,22 @@ class Symmetrics_Manager_Model_Observer extends Mage_Core_Model_Abstract
      */
     function manageWorkersScripts()
     {
-        $workersNumber = (int) Mage::getStoreConfig('manager/general/workers_number');
-        $workersCollection = Mage::getModel('manager/worker')->getCollection();
-        $delta = $workersCollection->getSize() - $workersNumber;
-
+        $workersCollection = Mage::getModel('manager/worker')->getCollection()->addFieldToSelect('*');
         foreach ($workersCollection as $worker) {
             $worker->manageWorkerState();
         }
-        if ($delta) {
-            Mage::helper('manager')->manageWorkersQuantity($delta);
-        }
+    }
+
+    /**
+     * Manage worker status by after_save event.
+     *
+     * @param Varien_Event_Observer $observer Observer model.
+     *
+     * @return void
+     */
+    function managerWorkerAfterSave($observer)
+    {
+        $worker = $observer->getEvent()->getObject();
+        $worker->manageWorkerState();
     }
 }

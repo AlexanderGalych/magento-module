@@ -41,15 +41,16 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
      */
     protected function _initWorker()
     {
+        /** @var $worker Symmetrics_Manager_Model_Worker */
+        $worker = Mage::getModel('manager/worker');
         $workerId = $this->getRequest()->getParam('worker');
         if ($workerId) {
-            /** @var $worker Symmetrics_Manager_Model_Worker */
-            $worker = Mage::getModel('manager/worker')->load($workerId);
-            if ($worker->getId()) {
-                return $worker;
+            $worker->load($workerId);
+            if (!$worker->getId()) {
+                $worker = false;
             }
         }
-        return false;
+        return $worker;
     }
 
     /**
@@ -80,7 +81,7 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
 
             $this->_title($this->__('System'))
                  ->_title($this->__('Workers Management'))
-                 ->_title($this->__($worker->getPid()));
+                 ->_title($this->__(($worker->getId()) ? $worker->getId() : 'New Worker'));
 
             Mage::register('current_worker', $worker);
             $this->loadLayout();
@@ -124,5 +125,134 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
             );
             $this->_redirect('*/*/list');
         }
+    }
+
+    /**
+     * Add worker entry.
+     *
+     * @return void
+     */
+    public function newAction()
+    {
+        $this->_forward('edit');
+    }
+
+    /**
+     * Remove worker entry.
+     *
+     * @return void
+     */
+    public function removeAction()
+    {
+        /** @var $worker Symmetrics_Manager_Model_Worker */
+        $worker = $this->_initWorker();
+        if ($worker) {
+            try {
+                $worker->delete();
+                $this->_getSession()->addSuccess(
+                    Mage::helper('manager')->__('The worker "%d" has been deleted.', $worker->getId())
+                );
+            } catch (Mage_Core_Exception $e) {
+                $this->_getSession()->addError($e->getMessage());
+            } catch (Exception $e) {
+                $this->_getSession()->addException(
+                    $e, Mage::helper('manager')->__('There was a problem with saving worker.')
+                );
+            }
+            $this->_redirect('*/*/list');
+        } else {
+            $this->_getSession()->addError(
+                Mage::helper('manager')->__('Cannot initialize the worker process.')
+            );
+            $this->_redirect('*/*/list');
+        }
+    }
+
+    /**
+     * Run selected workers.
+     *
+     * @return void
+     */
+    public function massStartAction()
+    {
+        /* @var $worker Symmetrics_Manager_Model_Worker */
+        $worker    = Mage::getSingleton('manager/worker');
+        $workerIds = $this->getRequest()->getParam('worker');
+        if (empty($workerIds) || !is_array($workerIds)) {
+            $this->_getSession()->addError(Mage::helper('manager')->__('Please select Workers'));
+        } else {
+            try {
+                $counter = $worker->setWorkerStatusByIds(Symmetrics_Manager_Model_Worker::STATUS_RUNNING, $workerIds);
+                $this->_getSession()->addSuccess(
+                    Mage::helper('manager')->__('Total of %d worker(es) have update status.', $counter)
+                );
+            } catch (Mage_Core_Exception $e) {
+                $this->_getSession()->addError($e->getMessage());
+            } catch (Exception $e) {
+                $this->_getSession()->addException(
+                    $e, Mage::helper('manager')->__('Cannot initialize the worker process.')
+                );
+            }
+        }
+
+        $this->_redirect('*/*/list');
+    }
+
+    /**
+     * Stop selected workers.
+     *
+     * @return void
+     */
+    public function massStopAction()
+    {
+        /* @var $worker Symmetrics_Manager_Model_Worker */
+        $worker    = Mage::getSingleton('manager/worker');
+        $workerIds = $this->getRequest()->getParam('worker');
+        if (empty($workerIds) || !is_array($workerIds)) {
+            $this->_getSession()->addError(Mage::helper('manager')->__('Please select Workers'));
+        } else {
+            try {
+                $counter = $worker->setWorkerStatusByIds(Symmetrics_Manager_Model_Worker::STATUS_STOPPED, $workerIds);
+                $this->_getSession()->addSuccess(
+                    Mage::helper('manager')->__('Total of %d worker(es) have update status.', $counter)
+                );
+            } catch (Mage_Core_Exception $e) {
+                $this->_getSession()->addError($e->getMessage());
+            } catch (Exception $e) {
+                $this->_getSession()->addException(
+                    $e, Mage::helper('manager')->__('Cannot initialize the worker process.')
+                );
+            }
+        }
+        $this->_redirect('*/*/list');
+    }
+
+    /**
+     * Remove selected workers.
+     *
+     * @return void
+     */
+    public function massRemoveAction()
+    {
+        /* @var $worker Symmetrics_Manager_Model_Worker */
+        $worker    = Mage::getSingleton('manager/worker');
+        $workerIds = $this->getRequest()->getParam('worker');
+        if (empty($workerIds) || !is_array($workerIds)) {
+            $this->_getSession()->addError(Mage::helper('manager')->__('Please select Workers'));
+        } else {
+            try {
+                $counter = $worker->removeWorkersByIds($workerIds);
+                $this->_getSession()->addSuccess(
+                    Mage::helper('manager')->__('Total of %d worker(es) were removed.', $counter)
+                );
+            } catch (Mage_Core_Exception $e) {
+                $this->_getSession()->addError($e->getMessage());
+            } catch (Exception $e) {
+                $this->_getSession()->addException(
+                    $e, Mage::helper('manager')->__('Cannot initialize the worker process.')
+                );
+            }
+        }
+        $this->_redirect('*/*/list');
     }
 }

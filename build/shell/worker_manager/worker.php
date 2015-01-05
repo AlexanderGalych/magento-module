@@ -20,9 +20,10 @@
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . "../abstract.php";
 
 /**
- * Symmetrics Manager Adminhtml Worker Block class.
+ * Worker main shell class.
  *
  * @category  Symmetrics
  * @package   Symmetrics_Manager
@@ -32,16 +33,55 @@
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
-class Symmetrics_Manager_Block_Adminhtml_Worker extends Mage_Adminhtml_Block_Widget_Grid_Container
+class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
 {
     /**
-     * Init block data.
+     * Path to callback function xml.
+     *
+     * @var null
+     */
+    protected $_callbackXmlPath = null;
+
+    /**
+     * Constructor for the shell script. Initialize arguments and basic variables.
      */
     public function __construct()
     {
-        $this->_blockGroup = 'manager';
-        $this->_controller = 'adminhtml_worker';
-        $this->_headerText = Mage::helper('manager')->__('Workers Management');
         parent::__construct();
+
+        if ($this->getArg('callback')) {
+            $this->_callbackXmlPath = $this->getArg('callback');
+        } else {
+            echo "callback argument should be defined.\n";
+            exit;
+        }
+    }
+
+    /**
+     * Get Callback function instance.
+     *
+     * @return Symmetrics_Manager_Model_Callback_Interface
+     */
+    protected function _getCallbackFunction()
+    {
+        $path = Symmetrics_Manager_Model_Callback_Base::XML_PATH_CALLBACK_FUNCTIONS . '/' . $this->_callbackXmlPath;
+        return $this->_factory->getSingleton($this->_factory->getConfig()->getNode($path));
+    }
+
+    /**
+     * Run script.
+     *
+     * return void.
+     */
+    public function run()
+    {
+        /** @var Symmetrics_Manager_Model_Callback_Interface $callback */
+        $callback = $this->_getCallbackFunction();
+        if(is_object($callback)) {
+            $callback->execute();
+        }
     }
 }
+
+$worker = new Symmetrics_Manager_Worker();
+$worker->run();

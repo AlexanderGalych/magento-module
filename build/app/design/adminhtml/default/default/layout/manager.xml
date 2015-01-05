@@ -32,6 +32,17 @@
  */
 -->
 <layout>
+    <adminhtml_worker_new>
+        <reference name="content">
+            <block type="manager/adminhtml_worker_edit" name="worker_edit" />
+        </reference>
+        <reference name="left">
+            <block type="manager/adminhtml_worker_edit_tabs" name="worker_edit_tabs">
+                <action method="addTab"><name>main_section</name><block>manager/adminhtml_worker_edit_tab_main</block></action>
+            </block>
+        </reference>
+    </adminhtml_worker_new>
+
     <adminhtml_worker_edit>
         <reference name="content">
             <block type="manager/adminhtml_worker_edit" name="worker_edit" />

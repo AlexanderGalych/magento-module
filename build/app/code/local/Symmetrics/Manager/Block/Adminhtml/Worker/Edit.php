@@ -62,20 +62,6 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit extends Mage_Adminhtml_Bloc
     }
 
     /**
-     * Get process reindex action url.
-     *
-     * @return string
-     */
-    public function getRunUrl()
-    {
-        return $this->getUrl(
-            'adminhtml/process/reindexProcess', array(
-                'worker' => Mage::registry('current_worker')->getId()
-            )
-        );
-    }
-
-    /**
      * Retrieve text for header element depending on loaded page.
      *
      * @return string
