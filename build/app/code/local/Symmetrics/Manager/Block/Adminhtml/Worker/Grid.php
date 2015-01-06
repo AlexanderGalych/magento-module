@@ -147,6 +147,18 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         );
 
         $this->addColumn(
+            'finished_time', array(
+                'header' => Mage::helper('manager')->__('Finished At'),
+                'type' => 'date',
+                'format' => $dateFormat,
+                'width' => '180',
+                'align' => 'left',
+                'index' => 'finished_time',
+                'frame_callback' => array($this, 'decorateDate')
+            )
+        );
+
+        $this->addColumn(
             'end_time', array(
                 'header' => Mage::helper('manager')->__('End Date'),
                 'type' => 'date',
@@ -193,9 +205,9 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
     {
         $class = '';
         switch ($row->getStatus()) {
-            case Symmetrics_Manager_Model_Worker::STATUS_PENDING :
+            case Symmetrics_Manager_Model_Worker::STATUS_FINISHED :
                 $class = 'grid-severity-major';
-                $value = Mage::helper('manager')->__('Pending');
+                $value = Mage::helper('manager')->__('Finished');
                 break;
             case Symmetrics_Manager_Model_Worker::STATUS_CREATED :
                 $class = 'grid-severity-notice';

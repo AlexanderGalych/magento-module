@@ -43,6 +43,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
      */
     protected function _prepareForm()
     {
+        /** @var Symmetrics_Manager_Model_Worker $model */
         $model = Mage::registry('current_worker');
         $dateFormat = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
         $form = new Varien_Data_Form();
@@ -52,7 +53,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
             array('legend'=>Mage::helper('manager')->__('General'), 'class'=>'fieldset-wide')
         );
 
-        $fieldSet->addField('worker', 'hidden', array('name' => 'worker', 'value'=>$model->getId()));
+        $fieldSet->addField('worker', 'hidden', array('name' => 'worker', 'value' => $model->getId()));
 
         $fieldSet->addField(
             'name', 'note', array(

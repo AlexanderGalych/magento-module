@@ -33,28 +33,23 @@
  * @link      http://www.symmetrics.de/
  */
 class Symmetrics_Manager_Model_Callback_Function_Callback1
+    extends Symmetrics_Manager_Model_Callback_Function_Abstract
     implements Symmetrics_Manager_Model_Callback_Function_Interface
 {
     /**
-     * Execute callback1 function.
+     * Execute callback2 function (curl).
+     *
+     * @return bool
+     *
+     * @throws Exception
      */
     public function execute()
     {
-        $myFile = fopen("/var/www/demo_ce_1411/build/var/workers/processor_" . getmypid() . "_log.txt", "w");
-        $urlPublish = 'http://rabbitmq.api.local/api/v1/publish';
-
-        fwrite($myFile, 'php processor pid: ' . getmypid()  . "\n\n");
-
         while (1) {
-            $ch = curl_init();
-            curl_setopt($ch,CURLOPT_URL, $urlPublish);
-            curl_setopt($ch,CURLOPT_POST, 1);
-            curl_setopt($ch,CURLOPT_POSTFIELDS, 'message=message test ' . date('d-m-Y H:i:s')  . "\n");
-            $result = curl_exec($ch);
-            fwrite($myFile, 'Publish message: "message test ' . date('d-m-Y H:i:s')  . "\n");
+            $message = 'message test ' . date('Y-m-d H:i:s');
+            $this->_publishMessage($message);
+            fwrite($this->_logFile, "Publish message: " . $message . "\n");
             sleep(mt_rand(1, 10));
         }
-        fclose($myFile);
-        return true;
     }
 }

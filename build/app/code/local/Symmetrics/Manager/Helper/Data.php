@@ -45,7 +45,7 @@ class Symmetrics_Manager_Helper_Data extends Mage_Core_Helper_Abstract
         return array(
             Symmetrics_Manager_Model_Worker::STATUS_CREATED => $this->__('Created'),
             Symmetrics_Manager_Model_Worker::STATUS_STOPPED => $this->__('Stopped'),
-            Symmetrics_Manager_Model_Worker::STATUS_PENDING => $this->__('Pending'),
+            Symmetrics_Manager_Model_Worker::STATUS_FINISHED => $this->__('Finished'),
             Symmetrics_Manager_Model_Worker::STATUS_RUNNING => $this->__('Running'),
             Symmetrics_Manager_Model_Worker::STATUS_WAITING => $this->__('Waiting'),
         );

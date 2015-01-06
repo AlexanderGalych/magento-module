@@ -41,9 +41,10 @@ class Symmetrics_Manager_Model_Observer extends Mage_Core_Model_Abstract
      *
      * @return void
      */
-    function manageWorkersScripts()
+    public function manageWorkersScripts()
     {
         $workersCollection = Mage::getModel('manager/worker')->getCollection()->addFieldToSelect('*');
+        /** @var Symmetrics_Manager_Model_Worker $worker */
         foreach ($workersCollection as $worker) {
             $worker->manageWorkerState();
         }
@@ -56,9 +57,34 @@ class Symmetrics_Manager_Model_Observer extends Mage_Core_Model_Abstract
      *
      * @return void
      */
-    function managerWorkerAfterSave($observer)
+    public function managerWorkerAfterSave($observer)
     {
+        /** @var Symmetrics_Manager_Model_Worker $worker */
         $worker = $observer->getEvent()->getObject();
-        $worker->manageWorkerState();
+
+        if ($worker->getData('status') != $worker->getOrigData('status')) {
+            $worker->setWorkerStatus($worker->getStatus());
+        }
+        if ($worker->getData('callback') != $worker->getOrigData('callback')) {
+            $worker->setWorkerCallback($worker->getCallback());
+        }
+    }
+
+    /**
+     * Manage worker status by delete_before event.
+     *
+     * @param Varien_Event_Observer $observer Observer model.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function managerWorkerDeleteBefore($observer)
+    {
+        /** @var Symmetrics_Manager_Model_Worker $worker */
+        $worker = $observer->getEvent()->getObject();
+        if ($worker->getStatus() == Symmetrics_Manager_Model_Worker::STATUS_RUNNING) {
+            $worker->killWorker();
+        }
     }
 }

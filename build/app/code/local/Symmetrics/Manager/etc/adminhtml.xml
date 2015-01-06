@@ -55,6 +55,13 @@
                             <manager translate="title">
                                 <title>Workers Management</title>
                             </manager>
+                            <config>
+                                <children>
+                                    <rabbit_mq>
+                                        <title>RabbitMQ</title>
+                                    </rabbit_mq>
+                                </children>
+                            </config>
                         </children>
                     </system>
                 </children>

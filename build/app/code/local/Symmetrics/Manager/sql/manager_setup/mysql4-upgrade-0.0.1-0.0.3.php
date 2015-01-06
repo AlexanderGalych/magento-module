@@ -105,6 +105,16 @@ if (!$installer->getConnection()
         'Date Create'
     );
     $table->addColumn(
+        'finished_time',
+        Varien_Db_Ddl_Table::TYPE_TIMESTAMP,
+        null,
+        array(
+            'nullable' => false,
+            'default' => Varien_Db_Ddl_Table::TIMESTAMP_INIT,
+        ),
+        'Date Finished'
+    );
+    $table->addColumn(
         'end_time',
         Varien_Db_Ddl_Table::TYPE_TIMESTAMP,
         null,

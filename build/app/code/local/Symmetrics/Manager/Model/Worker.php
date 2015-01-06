@@ -43,9 +43,9 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     const STATUS_WAITING = 3;
     /**
-     * Process status pending.
+     * Process status finished.
      */
-    const STATUS_PENDING = 2;
+    const STATUS_FINISHED = 2;
     /**
      * Process status stopped.
      */
@@ -57,11 +57,12 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     /**
      * Path to worker log file.
      */
-    const LOG_FILE_PATH = '/var/www/demo_ce_1411/build/var/workers/processor_%PID%_log.txt';
+    const LOG_FILE_PATH = '/workers/processor_%PID%_log.log';
     /**
      * Path to callback functions.
      */
-    const WORKER_PATH = 'php /var/www/demo_ce_1411/build/shell/worker_manager/worker.php --callback = %CALLBACK% > /dev/null 2>/dev/null &  echo $!';
+    const WORKER_PATH =
+        'php %PATH%/shell/worker_manager/worker.php --callback = %CALLBACK% > /dev/null 2>/dev/null &  echo $!';
 
     /**
      * Prefix of model events names.
@@ -92,7 +93,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      *
      * @return Symmetrics_Manager_Model_Resource_Worker_Collection
      */
-    public function getWorkersCollection()
+    protected function _getWorkersCollection()
     {
         if (is_null($this->_workersCollection)) {
             $this->_workersCollection = Mage::getModel('manager/worker')->getCollection();
@@ -109,7 +110,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function getWorkerById($workerId)
     {
-        foreach ($this->getWorkersCollection() as $worker) {
+        foreach ($this->_getWorkersCollection() as $worker) {
             if ($worker->getId() == $workerId) {
                 return $worker;
             }
@@ -124,7 +125,12 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function addWorker()
     {
-        $this->setPid(exec(str_replace('%CALLBACK%', $this->getCallback() , self::WORKER_PATH)));
+        $path = str_replace(
+            array('%PATH%', '%CALLBACK%'),
+            array(Mage::getBaseDir(), $this->getCallback()),
+            self::WORKER_PATH
+        );
+        $this->setPid(exec($path));
     }
 
     /**
@@ -134,16 +140,83 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function killWorker()
     {
-        if ($this->getPid() && posix_kill($this->getPid(), 14)) {
-            unlink(str_replace('%PID%', $this->getPid(), self::LOG_FILE_PATH));
+        if ($this->getPid()) {
+            posix_kill($this->getPid(), 14);
+            $logPath = Mage::getBaseDir('var') . self::LOG_FILE_PATH;
+            unlink(str_replace('%PID%', $this->getPid(), $logPath));
+            $this->setPid(null);
         }
-        $this->setPid(null);
-        $this->setStatus(self::STATUS_STOPPED);
     }
 
+    /**
+     * Check worker is running by pid.
+     *
+     * @return bool
+     */
+    public function checkWorkerIsRunning()
+    {
+        return $this->getPid() && posix_kill($this->getPid(), 0);
+    }
 
     /**
-     * Update workers statuses by ids.
+     * Set worker status and additional data.
+     *
+     * @param int $status Required status.
+     *
+     * @return void
+     */
+    public function setWorkerStatus($status)
+    {
+        $isChanged = false;
+        $this->setStatus($status);
+        switch ($status) {
+            case self::STATUS_RUNNING:
+                if (!$this->getPid()) {
+                    $this->addWorker();
+                    $this->setFinishedTime(null);
+                    $isChanged = true;
+                }
+                break;
+            case self::STATUS_FINISHED:
+                if ($this->getPid()) {
+                    $this->killWorker();
+                    $this->setEndTime(null);
+                    $this->setFinishedTime(Mage::getModel('core/date')->date('Y-m-d H:i:s'));
+                    $isChanged = true;
+                }
+                break;
+            case self::STATUS_STOPPED:
+                if ($this->getPid()) {
+                    $this->killWorker();
+                    $this->setEndTime(null);
+                    $this->setFinishedTime(null);
+                    $isChanged = true;
+                }
+                break;
+            default:
+                break;
+        }
+        if ($isChanged) {
+            $this->save();
+        }
+    }
+
+    /**
+     * Set new callback function to the existed worker.
+     *
+     * @param string $callback Callback function.
+     *
+     * @return string
+     *
+     * ToDo: should be implemented.
+     */
+    public function setWorkerCallback($callback)
+    {
+        return $callback;
+    }
+
+    /**
+     * Update workers statuses by ids array.
      *
      * @param int   $status Selected worker status.
      * @param array $ids    Workers ids.
@@ -190,32 +263,14 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function manageWorkerState()
     {
-        $isChanged = false;
-        $shouldDieNow = strtotime($this->getEndTime()) < strtotime(Mage::getModel('core/date')->date('Y-m-d H:i:s'));
-
-        if ($this->getStatus() != self::STATUS_STOPPED && $this->getEndTime() && $shouldDieNow) {
-            $this->killWorker();
-            $isChanged = true;
-        } else {
-            switch ($this->getStatus()) {
-                case self::STATUS_RUNNING:
-                    if (!$this->getPid()) {
-                        $this->addWorker();
-                        $isChanged = true;
-                    }
-                    break;
-                case self::STATUS_STOPPED:
-                    if ($this->getPid()) {
-                        $this->killWorker();
-                        $isChanged = true;
-                    }
-                    break;
-                default:
-                    break;
+        if ($this->getStatus() == self::STATUS_RUNNING) {
+            $date = Mage::getModel('core/date')->date('Y-m-d H:i:s');
+            $shouldDieNow = strtotime($this->getEndTime()) < strtotime($date);
+            if ($this->getEndTime() && $shouldDieNow) {
+                $this->setWorkerStatus(self::STATUS_STOPPED);
+            } elseif (!$this->checkWorkerIsRunning()) {
+                $this->setWorkerStatus(self::STATUS_FINISHED);
             }
-        }
-        if ($isChanged) {
-            $this->save();
         }
     }
 }
