@@ -83,6 +83,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
      */
     protected function _prepareColumns()
     {
+        $dateFormat = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
         $this->addColumn(
             'entry_id', array(
                 'header' => Mage::helper('manager')->__('Worker Id'),
@@ -91,9 +92,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'index' => 'entry_id',
                 'sortable' => true,
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'pid', array(
                 'header' => Mage::helper('manager')->__('Process Id'),
                 'sortable' => true,
@@ -101,27 +100,21 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'align' => 'left',
                 'index' => 'pid',
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'callback', array(
                 'header' => Mage::helper('manager')->__('Callback'),
                 'align' => 'left',
                 'index' => 'callback',
                 'sortable' => true,
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'description', array(
                 'header' => Mage::helper('manager')->__('Description'),
                 'align' => 'left',
                 'index' => 'description',
                 'sortable' => false,
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'status', array(
                 'header' => Mage::helper('manager')->__('Status'),
                 'width' => '120',
@@ -131,10 +124,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'options' => 'status',
                 'frame_callback' => array($this, 'decorateStatus')
             )
-        );
-
-        $dateFormat = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
-        $this->addColumn(
+        )->addColumn(
             'creation_time', array(
                 'header' => Mage::helper('manager')->__('Created At'),
                 'type' => 'date',
@@ -144,9 +134,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'index' => 'creation_time',
                 'frame_callback' => array($this, 'decorateDate')
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'finished_time', array(
                 'header' => Mage::helper('manager')->__('Finished At'),
                 'type' => 'date',
@@ -156,9 +144,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'index' => 'finished_time',
                 'frame_callback' => array($this, 'decorateDate')
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'end_time', array(
                 'header' => Mage::helper('manager')->__('End Date'),
                 'type' => 'date',
@@ -168,9 +154,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'index' => 'end_time',
                 'frame_callback' => array($this, 'decorateDate')
             )
-        );
-
-        $this->addColumn(
+        )->addColumn(
             'action', array(
                 'header' => Mage::helper('manager')->__('Action'),
                 'width' => '100',
