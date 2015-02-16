@@ -77,13 +77,22 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
     }
 
     /**
+     * Get date format for current locale.
+     *
+     * @return string
+     */
+    protected function _getDateFormat()
+    {
+        return Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
+    }
+
+    /**
      * Prepare grid columns.
      *
      * @return Mage_Index_Block_Adminhtml_Process_Grid
      */
     protected function _prepareColumns()
     {
-        $dateFormat = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
         $this->addColumn(
             'entry_id', array(
                 'header' => Mage::helper('manager')->__('Worker Id'),
@@ -127,8 +136,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         )->addColumn(
             'creation_time', array(
                 'header' => Mage::helper('manager')->__('Created At'),
-                'type' => 'date',
-                'format' => $dateFormat,
+                'type' => 'datetime',
+                'time' => 'true',
                 'width' => '180',
                 'align' => 'left',
                 'index' => 'creation_time',
@@ -137,8 +146,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         )->addColumn(
             'finished_time', array(
                 'header' => Mage::helper('manager')->__('Finished At'),
-                'type' => 'date',
-                'format' => $dateFormat,
+                'type' => 'datetime',
+                'time' => 'true',
                 'width' => '180',
                 'align' => 'left',
                 'index' => 'finished_time',
@@ -147,8 +156,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         )->addColumn(
             'end_time', array(
                 'header' => Mage::helper('manager')->__('End Date'),
-                'type' => 'date',
-                'format' => $dateFormat,
+                'type' => 'datetime',
+                'time' => 'true',
                 'width' => '180',
                 'align' => 'left',
                 'index' => 'end_time',
@@ -225,7 +234,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         if (!$value) {
             return $this->__('Not Specified');
         }
-        return $value;
+        return Mage::app()->getLocale()->date($value, null, null, false)->toString($this->_getDateFormat());
     }
 
     /**

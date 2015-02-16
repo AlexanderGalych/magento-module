@@ -157,7 +157,8 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
         /** @var AMQPMessage $amQpMsg */
         $amQpMsg = $this->_channel->basic_get($this->_queue);
         if (is_object($amQpMsg)) {
-            $this->_channel->basic_ack($amQpMsg->delivery_info['delivery_tag']);
+            $objectKey = 'delivery_info';
+            $this->_channel->basic_ack($amQpMsg->$objectKey['delivery_tag']);
         }
         return $amQpMsg->body;
     }

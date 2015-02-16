@@ -101,8 +101,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
                 'label' => Mage::helper('manager')->__('Stop date'),
                 'title' => Mage::helper('manager')->__('Stop date'),
                 'name'  => 'end_time',
-                'value' => $model->getEndTime(),
-                'input_format' => $dateFormat,
+                'value' => Mage::app()->getLocale()
+                    ->date($model->getEndTime(), null, null, true)->toString($dateFormat),
                 'format' => $dateFormat,
                 'image' => $this->getSkinUrl('images/grid-cal.gif'),
                 'time' => true,

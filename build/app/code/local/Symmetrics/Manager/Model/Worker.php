@@ -102,6 +102,18 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Get date in GMT format.
+     *
+     * @param int|string $input Date in current timezone.
+     *
+     * @return string
+     */
+    protected function _getGmtDate($input = null)
+    {
+        return Mage::getSingleton('core/date')->gmtDate('Y-m-d H:i:s', $input);
+    }
+
+    /**
      * Get worker process by specific id
      *
      * @param int $workerId Worker proccess id.
@@ -169,11 +181,13 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     {
         $isChanged = false;
         $this->setStatus($status);
+        $date = $this->_getGmtDate();
         switch ($status) {
             case self::STATUS_RUNNING:
                 if (!$this->getPid()) {
                     $this->addWorker();
                     $this->setFinishedTime(null);
+                    $this->setCreationTime($date);
                     $isChanged = true;
                 }
                 break;
@@ -181,7 +195,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
                 if ($this->getPid()) {
                     $this->killWorker();
                     $this->setEndTime(null);
-                    $this->setFinishedTime(Mage::getModel('core/date')->date('Y-m-d H:i:s'));
+                    $this->setFinishedTime($date);
                     $isChanged = true;
                 }
                 break;
@@ -189,7 +203,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
                 if ($this->getPid()) {
                     $this->killWorker();
                     $this->setEndTime(null);
-                    $this->setFinishedTime(null);
+                    $this->setFinishedTime($date);
                     $isChanged = true;
                 }
                 break;
@@ -231,7 +245,6 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
             ->addFieldToFilter('status', array('neq' => $status));
         foreach ($collection as $worker) {
             $worker->setStatus($status);
-            $worker->setEndTime(null);
         }
         return $collection->save()->count();
     }
@@ -264,8 +277,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     public function manageWorkerState()
     {
         if ($this->getStatus() == self::STATUS_RUNNING) {
-            $date = Mage::getModel('core/date')->date('Y-m-d H:i:s');
-            $shouldDieNow = strtotime($this->getEndTime()) < strtotime($date);
+            $shouldDieNow = strtotime($this->getEndTime()) < strtotime($this->_getGmtDate());
             if ($this->getEndTime() && $shouldDieNow) {
                 $this->setWorkerStatus(self::STATUS_STOPPED);
             } elseif (!$this->checkWorkerIsRunning()) {

@@ -106,6 +106,11 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
         $postData = $this->getRequest()->getPost();
         if ($worker && $postData) {
             try {
+                if (isset($postData['end_time']) && $postData['end_time']) {
+                    $format = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
+                    $postData['end_time'] = (string) Mage::app()->getLocale()
+                        ->utcDate(Mage::app()->getStore(), $postData['end_time'], true, $format);
+                }
                 $worker->addData($postData);
                 $worker->save();
                 $this->_getSession()->addSuccess(
