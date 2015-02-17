@@ -52,7 +52,7 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
         if ($this->getArg('callback')) {
             $this->_callbackXmlPath = $this->getArg('callback');
         } else {
-            echo "callback argument should be defined.\n";
+            echo "Callback argument should be defined.\n";
             exit;
         }
     }
@@ -60,7 +60,7 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
     /**
      * Get Callback function instance.
      *
-     * @return Symmetrics_Manager_Model_Callback_Interface
+     * @return Symmetrics_Manager_Model_Callback_Function_Interface
      */
     protected function _getCallbackFunction()
     {
@@ -75,10 +75,12 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
      */
     public function run()
     {
-        /** @var Symmetrics_Manager_Model_Callback_Interface $callback */
+        /** @var Symmetrics_Manager_Model_Callback_Function_Interface $callback */
         $callback = $this->_getCallbackFunction();
-        if(is_object($callback)) {
+        if (is_object($callback)) {
             $callback->execute();
+        } else {
+            echo "Wrong callback model argument.\n";
         }
     }
 }
