@@ -61,8 +61,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     /**
      * Path to callback functions.
      */
-    const WORKER_PATH =
-        'php %PATH%/shell/worker_manager/worker.php --callback = %CALLBACK% > /dev/null 2>/dev/null &  echo $!';
+    const WORKER_PATH = 'php %PATH%/shell/worker_manager/worker.php --callback = %CALLBACK% --loglevel = %LOG_LEVEL% > /dev/null 2>/dev/null &  echo $!';
 
     /**
      * Prefix of model events names.
@@ -138,8 +137,8 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     public function addWorker()
     {
         $path = str_replace(
-            array('%PATH%', '%CALLBACK%'),
-            array(Mage::getBaseDir(), $this->getCallback()),
+            array('%PATH%', '%CALLBACK%', '%LOG_LEVEL%'),
+            array(Mage::getBaseDir(), $this->getCallback(), $this->getLogLevel()),
             self::WORKER_PATH
         );
         $this->setPid(exec($path));

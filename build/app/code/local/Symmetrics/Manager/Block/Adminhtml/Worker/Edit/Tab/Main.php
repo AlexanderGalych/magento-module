@@ -96,6 +96,17 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
         );
 
         $fieldSet->addField(
+            'log_level', 'select',
+            array(
+                'label' => Mage::helper('manager')->__('Status'),
+                'title' => Mage::helper('manager')->__('Status'),
+                'name'  => 'log_level',
+                'value' => $model->getLogLevel(),
+                'values'=> Mage::helper('manager')->getLogLevels()
+            )
+        );
+
+        $fieldSet->addField(
             'end_time', 'date',
             array(
                 'label' => Mage::helper('manager')->__('Stop date'),

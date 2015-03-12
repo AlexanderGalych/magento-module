@@ -124,6 +124,14 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'sortable' => false,
             )
         )->addColumn(
+            'log_level', array(
+                'header' => Mage::helper('manager')->__('Log Level'),
+                'align' => 'left',
+                'index' => 'log_level',
+                'sortable' => true,
+                'renderer' => 'manager/adminhtml_worker_grid_column_renderer_loglevel',
+            )
+        )->addColumn(
             'status', array(
                 'header' => Mage::helper('manager')->__('Status'),
                 'width' => '120',

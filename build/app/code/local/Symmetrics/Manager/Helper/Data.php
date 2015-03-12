@@ -61,4 +61,12 @@ class Symmetrics_Manager_Helper_Data extends Mage_Core_Helper_Abstract
         $callbackFunctions = Mage::getStoreConfig('callback_function');
         return $callbackFunctions;
     }
+
+    /**
+     * @return array
+     */
+    public function getLogLevels()
+    {
+        return Mage::getSingleton('manager/system_config_source_loglevel')->toArray();
+    }
 }

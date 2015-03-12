@@ -84,6 +84,16 @@ if (!$installer->getConnection()
         'Description'
     );
     $table->addColumn(
+        'log_level',
+        Varien_Db_Ddl_Table::TYPE_INTEGER,
+        255,
+        array(
+            'nullable' => false,
+            'default' => -1,
+        ),
+        'Log Level'
+    );
+    $table->addColumn(
         'status',
         Varien_Db_Ddl_Table::TYPE_INTEGER,
         255,

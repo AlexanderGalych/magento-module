@@ -39,7 +39,7 @@ class Symmetrics_Manager_Model_Callback_Function_Callback1
     /**
      * Execute callback2 function (curl).
      *
-     * @return bool
+     * @return null
      *
      * @throws Exception
      */
@@ -48,7 +48,7 @@ class Symmetrics_Manager_Model_Callback_Function_Callback1
         while (1) {
             $message = 'message test ' . date('Y-m-d H:i:s');
             $this->_publishMessage($message);
-            fwrite($this->_logFile, "Publish message: " . $message . "\n");
+            $this->getLogger()->logInfoMessage("Publish message: " . $message);
             sleep(mt_rand(1, 10));
         }
     }

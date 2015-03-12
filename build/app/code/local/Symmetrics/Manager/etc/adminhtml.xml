@@ -38,11 +38,11 @@
     <menu>
         <system>
             <children>
-                <manager translate="title" module="manager">
+                <worker_manager translate="title" module="manager">
                     <title>Workers Management</title>
                     <action>adminhtml/worker/list</action>
                     <sort_order>93</sort_order>
-                </manager>
+                </worker_manager>
             </children>
         </system>
     </menu>
@@ -52,11 +52,14 @@
                 <children>
                     <system>
                         <children>
-                            <manager translate="title">
+                            <worker_manager translate="title">
                                 <title>Workers Management</title>
-                            </manager>
+                            </worker_manager>
                             <config>
                                 <children>
+                                    <worker>
+                                        <title>Worker Configuration</title>
+                                    </worker>
                                     <rabbit_mq>
                                         <title>RabbitMQ</title>
                                     </rabbit_mq>

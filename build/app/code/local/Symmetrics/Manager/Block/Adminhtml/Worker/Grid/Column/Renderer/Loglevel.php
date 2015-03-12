@@ -16,42 +16,36 @@
  * @package   Symmetrics_Manager
  * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
  * @author    Alex Galych <aleksandr.galych@symmetrics.de>
- * @copyright 2014 symmetrics - a CGI Group brand
+ * @copyright 2015 symmetrics - a CGI Group brand
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
 
 /**
- * Callback2 function class.
+ * Symmetrics Manager Adminhtml Worker Renderer for Log level grid column.
  *
  * @category  Symmetrics
  * @package   Symmetrics_Manager
  * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
  * @author    Alex Galych <aleksandr.galych@symmetrics.de>
- * @copyright 2014 symmetrics - a CGI Group brand
+ * @copyright 2015 symmetrics - a CGI Group brand
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
-class Symmetrics_Manager_Model_Callback_Function_Callback2
-    extends Symmetrics_Manager_Model_Callback_Function_Abstract
-    implements Symmetrics_Manager_Model_Callback_Function_Interface
+class Symmetrics_Manager_Block_Adminhtml_Worker_Grid_Column_Renderer_Loglevel
+    extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
 {
-
     /**
-     * Execute callback2 function (curl).
+     * Get worker log level value title.
      *
-     * @return null
+     * @param Varien_Object $row Row entity.
      *
-     * @throws Exception
+     * @return string
      */
-    public function execute()
+    protected function _getValue(Varien_Object $row)
     {
-        while (1) {
-            $message = $this->_retrieveMessage();
-            if ($message) {
-                $this->getLogger()->logInfoMessage("Retrieved message: " . $message);
-            }
-            sleep(mt_rand(1, 10));
-        }
+        $value = $row->getLogLevel();
+        $logOptionsArr = Mage::getSingleton('manager/system_config_source_loglevel')->toArray();
+        return $logOptionsArr[$value];
     }
 }

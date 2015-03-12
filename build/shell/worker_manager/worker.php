@@ -20,7 +20,7 @@
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . "../abstract.php";
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'abstract.php';
 
 /**
  * Worker main shell class.
@@ -43,11 +43,22 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
     protected $_callbackXmlPath = null;
 
     /**
+     * Worker log level.
+     *
+     * @var null
+     */
+    protected $_logLevel = null;
+
+    /**
      * Constructor for the shell script. Initialize arguments and basic variables.
      */
     public function __construct()
     {
         parent::__construct();
+
+        if ($this->getArg('loglevel')) {
+            $this->_logLevel = $this->getArg('loglevel');
+        }
 
         if ($this->getArg('callback')) {
             $this->_callbackXmlPath = $this->getArg('callback');
@@ -65,7 +76,12 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
     protected function _getCallbackFunction()
     {
         $path = Symmetrics_Manager_Model_Callback_Base::XML_PATH_CALLBACK_FUNCTIONS . '/' . $this->_callbackXmlPath;
-        return $this->_factory->getSingleton($this->_factory->getConfig()->getNode($path));
+        $model = $this->_factory->getConfig()->getNode($path);
+        if ($model) {
+            $logger = $this->_factory->getModel('manager/logging_logger', array(getmypid(), $this->_logLevel));
+            $this->_factory->getModel($model, array($logger));
+        }
+        return null;
     }
 
     /**

@@ -42,6 +42,7 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
      * Default exchange type.
      */
     const  EXCHANGE_TYPE = 'direct';
+
     /**
      * Default message type.
      */
@@ -51,36 +52,41 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
      * @var AMQPConnection Rabbitmq connection.
      */
     protected $_connection;
+
     /**
      * @var PhpAmqpLib\Channel\AMQPChannel Rabbitmq channel.
      */
     protected $_channel;
+
     /**
      * @var string RabbitMQ queue.
      */
     protected $_queue;
+
     /**
      * @var string RabbitMQ exchange.
      */
     protected $_exchange;
+
     /**
-     * @var resource Log file resource.
+     * @var Symmetrics_Manager_Model_Logging_Logger Log model instance.
      */
-    protected $_logFile;
+    protected $_loggerInstance;
 
     /**
      * Init object method.
      *
+     * @param Symmetrics_Manager_Model_Logging_Logger $logger Log model instance.
+     *
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(Symmetrics_Manager_Model_Logging_Logger $logger)
     {
         $this->_exchange = Mage::getStoreConfig('rabbit_mq/message/exchange');
         $this->_queue = Mage::getStoreConfig('rabbit_mq/message/queue');
         $this->_establishConnection();
 
-        $this->_logFile = fopen(Mage::getBaseDir('var') . "/workers/processor_" . getmypid() . "_log.log", "w");
-        fwrite($this->_logFile, 'php processor pid: ' . getmypid()  . "\n\n");
+        $this->_loggerInstance = $logger;
     }
 
     /**
@@ -97,7 +103,16 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
         if ($this->_connection) {
             $this->_connection->close();
         }
-        fclose($this->_logFile);
+    }
+
+    /**
+     * Get Worker Logger model instance.
+     *
+     * @return Symmetrics_Manager_Model_Logging_Logger
+     */
+    public function getLogger()
+    {
+        return $this->_loggerInstance;
     }
 
     /**
