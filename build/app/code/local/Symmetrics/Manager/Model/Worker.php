@@ -38,26 +38,42 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      * Process status running.
      */
     const STATUS_RUNNING = 4;
+
     /**
      * Process status waiting.
      */
     const STATUS_WAITING = 3;
+
     /**
      * Process status finished.
      */
     const STATUS_FINISHED = 2;
+
     /**
      * Process status stopped.
      */
     const STATUS_STOPPED = 1;
+
     /**
      * Process status created.
      */
     const STATUS_CREATED = 0;
+
     /**
      * Path to worker log file.
      */
     const LOG_FILE_PATH = '/workers/processor_%PID%_log.log';
+
+    /**
+     * Follow global log level config option id.
+     */
+    const FOLLOW_GLOBAL_LOG_LEVEL_ID = 0;
+
+    /**
+     * Global workers log level config path.
+     */
+    const GLOBAL_LOG_LEVEL_PATH = 'worker/general/log_level';
+
     /**
      * Path to callback functions.
      */
@@ -101,6 +117,19 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Get worker log level by option id and global configuration.
+     *
+     * @return int
+     */
+    protected function _getWorkerLogLevel()
+    {
+        if ($this->getLogLevel() == self::FOLLOW_GLOBAL_LOG_LEVEL_ID) {
+            return Mage::getStoreConfig(self::GLOBAL_LOG_LEVEL_PATH);
+        }
+        return $this->getLogLevel();
+    }
+
+    /**
      * Get date in GMT format.
      *
      * @param int|string $input Date in current timezone.
@@ -138,7 +167,7 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     {
         $path = str_replace(
             array('%PATH%', '%CALLBACK%', '%LOG_LEVEL%'),
-            array(Mage::getBaseDir(), $this->getCallback(), $this->getLogLevel()),
+            array(Mage::getBaseDir(), $this->getCallback(), $this->_getWorkerLogLevel()),
             self::WORKER_PATH
         );
         $this->setPid(exec($path));
@@ -153,8 +182,8 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     {
         if ($this->getPid()) {
             posix_kill($this->getPid(), 14);
-            $logPath = Mage::getBaseDir('var') . self::LOG_FILE_PATH;
-            unlink(str_replace('%PID%', $this->getPid(), $logPath));
+//            $logPath = Mage::getBaseDir('var') . self::LOG_FILE_PATH;
+//            unlink(str_replace('%PID%', $this->getPid(), $logPath));
             $this->setPid(null);
         }
     }

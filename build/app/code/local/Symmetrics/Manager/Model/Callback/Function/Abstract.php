@@ -22,8 +22,8 @@
  */
 require_once('php-amqplib/vendor/autoload.php');
 
-use PhpAmqpLib\Connection\AMQPConnection;
-use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Connection\AMQPConnection as AMQPC;
+use PhpAmqpLib\Message\AMQPMessage as AMQPM;
 
 /**
  * Abstract class for Callback functions.
@@ -49,12 +49,12 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
     const MESSAGE_TYPE = 'text/plain';
 
     /**
-     * @var AMQPConnection Rabbitmq connection.
+     * @var AMQPC Rabbitmq connection.
      */
     protected $_connection;
 
     /**
-     * @var PhpAmqpLib\Channel\AMQPChannel Rabbitmq channel.
+     * @var AMQPC Rabbitmq channel.
      */
     protected $_channel;
 
@@ -135,7 +135,7 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
     protected function _establishConnection()
     {
         $config = $this->_getConnectionConfig();
-        $this->_connection = new AMQPConnection(
+        $this->_connection = new AMQPC(
             $config['host'], $config['port'], $config['user'], $config['password'], $config['vhost']
         );
         $this->_channel = $this->_connection->channel();
@@ -158,7 +158,7 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
      */
     protected function _publishMessage($message = '')
     {
-        $amQpMsg = new AMQPMessage($message, array('content_type' => self::MESSAGE_TYPE, 'delivery_mode' => 2));
+        $amQpMsg = new AMQPM($message, array('content_type' => self::MESSAGE_TYPE, 'delivery_mode' => 2));
         $this->_channel->basic_publish($amQpMsg, $this->_exchange);
     }
 
@@ -169,12 +169,22 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
      */
     protected function _retrieveMessage()
     {
-        /** @var AMQPMessage $amQpMsg */
-        $amQpMsg = $this->_channel->basic_get($this->_queue);
-        if (is_object($amQpMsg)) {
-            $objectKey = 'delivery_info';
-            $this->_channel->basic_ack($amQpMsg->$objectKey['delivery_tag']);
+//        /** @var AMQPMessage $amQpMsg */
+//        $amQpMsg = $this->_channel->basic_get($this->_queue);
+//        if (is_object($amQpMsg)) {
+//            $objectKey = 'delivery_info';
+//            $this->_channel->basic_ack($amQpMsg->$objectKey['delivery_tag']);
+//        }
+//        return $amQpMsg->body;
+
+        $callback = function($msg) {
+            return $msg->body;
+        };
+
+        $this->_channel->basic_consume($this->_queue, '', false, true, false, false, $callback);
+
+        while(count($this->_channel->callbacks)) {
+            $this->_channel->wait();
         }
-        return $amQpMsg->body;
     }
 }

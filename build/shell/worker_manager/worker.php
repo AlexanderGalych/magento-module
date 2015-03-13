@@ -29,7 +29,7 @@ require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATO
  * @package   Symmetrics_Manager
  * @author    symmetrics - a CGI Group brand <info@symmetrics.de>
  * @author    Alex Galych <aleksandr.galych@symmetrics.de>
- * @copyright 2014 symmetrics - a CGI Group brand
+ * @copyright 2014-2015 symmetrics - a CGI Group brand
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
@@ -57,7 +57,7 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
         parent::__construct();
 
         if ($this->getArg('loglevel')) {
-            $this->_logLevel = $this->getArg('loglevel');
+            $this->_logLevel = (int) $this->getArg('loglevel');
         }
 
         if ($this->getArg('callback')) {
@@ -78,8 +78,9 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
         $path = Symmetrics_Manager_Model_Callback_Base::XML_PATH_CALLBACK_FUNCTIONS . '/' . $this->_callbackXmlPath;
         $model = $this->_factory->getConfig()->getNode($path);
         if ($model) {
-            $logger = $this->_factory->getModel('manager/logging_logger', array(getmypid(), $this->_logLevel));
-            $this->_factory->getModel($model, array($logger));
+            $params = array('pid' => getmypid(), 'log_level' => $this->_logLevel);
+            $logger = $this->_factory->getModel('manager/logging_logger', $params);
+            return $this->_factory->getModel($model, $logger);
         }
         return null;
     }

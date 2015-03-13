@@ -89,7 +89,7 @@ if (!$installer->getConnection()
         255,
         array(
             'nullable' => false,
-            'default' => -1,
+            'default' => 0,
         ),
         'Log Level'
     );

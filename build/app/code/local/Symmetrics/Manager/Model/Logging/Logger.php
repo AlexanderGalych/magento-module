@@ -22,7 +22,7 @@
  */
 
 /**
- * Worker Callback Logger model.
+ * Worker Logger model.
  *
  * @category  Symmetrics
  * @package   Symmetrics_Manager
@@ -36,164 +36,464 @@ class Symmetrics_Manager_Model_Logging_Logger
     extends Symmetrics_Manager_Model_Logging_Abstract
     implements Symmetrics_Manager_Model_Logging_Interface
 {
-
-    public function logFatalError($log)
+    /**
+     *
+     *
+     * @param string $log  Log message.
+     * @param array  $tags Array of message tags.
+     *
+     * @return void
+     */
+    public function logFatalError($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_FATAL_LOG)) {
+            if (is_string($log)) {
+                $msg = $log;
+            } else if ($log instanceof Exception) {
+                $msg = 'MESSAGE: ' . $log->getMessage() . '  ' . 'FILE: ' . $log->getFile()
+                    . '  LINE: ' . $log->getLine();
+            } else {
+                $msg = (string) $log;
+            }
+            $this->_writeLog($msg, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logInfoMessage($log)
+    /**
+     *
+     *
+     * @param string $log  Log message.
+     * @param array  $tags Array of message tags.
+     *
+     * @return void
+     */
+    public function logInfoMessage($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logGlobalLevel($log)
+    /**
+     *
+     *
+     * @param string $log  Log message.
+     * @param array  $tags Array of message tags.
+     *
+     * @return void
+     */
+    public function logGlobalLevel($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logGlobalStatus($log)
+    /**
+     *
+     *
+     * @param string $log  Log message.
+     * @param array  $tags Array of message tags.
+     *
+     * @return void
+     */
+    public function logGlobalStatus($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logGlobalError($log)
+    /**
+     *
+     *
+     * @param string $log  Log message.
+     * @param array  $tags Array of message tags.
+     *
+     * @return void
+     */
+    public function logGlobalError($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_ERROR_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logGlobalWarning($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logGlobalWarning($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_WARNING_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logGlobalInputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logGlobalInputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logGlobalOutputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logGlobalOutputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::GLOBAL_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::GLOBAL_LOG_PREFIX);
+        }
     }
 
-    public function logIterationLevel($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logIterationLevel($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::ITERATION_LOG)) {
+            $this->_writeLog($log, $tags, self::ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logIterationStatus($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logIterationStatus($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::ITERATION_LOG)) {
+            $this->_writeLog($log, $tags, self::ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logIterationError($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logIterationError($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::ITERATION_ERROR_LOG)) {
+            $this->_writeLog($log, $tags, self::ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logIterationWarning($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logIterationWarning($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::ITERATION_WARNING_LOG)) {
+            $this->_writeLog($log, $tags, self::ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logIterationInputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logIterationInputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::ITERATION_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logIterationOutputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logIterationOutputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::ITERATION_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logBoxLevel($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxLevel($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_LOG_PREFIX);
+        }
     }
 
-    public function logBoxStatus($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxStatus($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_LOG_PREFIX);
+        }
     }
 
-    public function logBoxError($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxError($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_ERROR_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_LOG_PREFIX);
+        }
     }
 
-    public function logBoxWarning($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxWarning($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_WARNING_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_LOG_PREFIX);
+        }
     }
 
-    public function logBoxInputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxInputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOutputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOutputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOperationLevel($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOperationLevel($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_OPERATION_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_OPERATION_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOperationStatus($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOperationStatus($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_OPERATION_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_OPERATION_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOperationError($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOperationError($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_OPERATION_ERROR_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_OPERATION_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOperationWarning($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOperationWarning($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_OPERATION_WARNING_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_OPERATION_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOperationInputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOperationInputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_OPERATION_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_OPERATION_LOG_PREFIX);
+        }
     }
 
-    public function logBoxOperationOutputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logBoxOperationOutputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::BOX_OPERATION_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::BOX_OPERATION_LOG_PREFIX);
+        }
     }
 
-    public function logPostIterationLevel($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logPostIterationLevel($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::POST_ITERATION_LOG)) {
+            $this->_writeLog($log, $tags, self::POST_ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logPostIterationStatus($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logPostIterationStatus($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::POST_ITERATION_LOG)) {
+            $this->_writeLog($log, $tags, self::POST_ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logPostIterationError($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logPostIterationError($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::POST_ITERATION_ERROR_LOG)) {
+            $this->_writeLog($log, $tags, self::POST_ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logPostIterationWarning($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logPostIterationWarning($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::POST_ITERATION_WARNING_LOG)) {
+            $this->_writeLog($log, $tags, self::POST_ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logPostIterationInputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logPostIterationInputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::POST_ITERATION_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::POST_ITERATION_LOG_PREFIX);
+        }
     }
 
-    public function logPostIterationOutputData($log)
+    /**
+     *
+     *
+     * @param string $log Log message.
+     *
+     * @return void
+     */
+    public function logPostIterationOutputData($log, $tags = array())
     {
-        $this->_writeLog($log);
+        if ($this->_isAllowed(self::POST_ITERATION_DATA_LOG)) {
+            $this->_writeLog($log, $tags, self::POST_ITERATION_LOG_PREFIX);
+        }
     }
 }

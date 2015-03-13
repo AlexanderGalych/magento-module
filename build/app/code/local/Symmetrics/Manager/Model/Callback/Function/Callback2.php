@@ -47,11 +47,18 @@ class Symmetrics_Manager_Model_Callback_Function_Callback2
     public function execute()
     {
         while (1) {
-            $message = $this->_retrieveMessage();
-            if ($message) {
-                $this->getLogger()->logInfoMessage("Retrieved message: " . $message);
+            try {
+                $message = $this->_retrieveMessage();
+                if ($message) {
+                    $this->getLogger()->logInfoMessage("Retrieved message: " . $message);
+                }
+            } catch (PhpAmqpLib\Exception\AMQPProtocolException $e) {
+                $this->getLogger()->logFatalError($e, array('AMPQ', 'Connection'));
+            } catch (Exception $e) {
+                $this->getLogger()->logFatalError($e, array('UNKNOWN', 'Connection'));
+            } finally {
+                sleep(mt_rand(1, 10));
             }
-            sleep(mt_rand(1, 10));
         }
     }
 }

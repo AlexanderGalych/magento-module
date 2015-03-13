@@ -47,9 +47,16 @@ class Symmetrics_Manager_Model_Callback_Function_Callback1
     {
         while (1) {
             $message = 'message test ' . date('Y-m-d H:i:s');
-            $this->_publishMessage($message);
-            $this->getLogger()->logInfoMessage("Publish message: " . $message);
-            sleep(mt_rand(1, 10));
+            try {
+                $this->_publishMessage($message);
+                $this->getLogger()->logInfoMessage("Publish message: " . $message, array('TAG1', 'TAG2', 'TAG3'));
+            } catch (PhpAmqpLib\Exception\AMQPProtocolException $e) {
+                $this->getLogger()->logFatalError($e, array('AMPQ', 'Connection'));
+            } catch (Exception $e) {
+                $this->getLogger()->logFatalError($e, array('UNKNOWN', 'Connection'));
+            } finally {
+                sleep(mt_rand(1, 10));
+            }
         }
     }
 }

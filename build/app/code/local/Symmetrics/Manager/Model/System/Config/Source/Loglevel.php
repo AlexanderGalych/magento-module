@@ -59,8 +59,9 @@ class Symmetrics_Manager_Model_System_Config_Source_Loglevel
      */
     public function toArray()
     {
+        $followGlobalConfigId = Symmetrics_Manager_Model_Worker::FOLLOW_GLOBAL_LOG_LEVEL_ID;
         return array(
-            0 => Mage::helper('manager')->__('FOLLOW BASE CONFIGURATION'),
+            $followGlobalConfigId => Mage::helper('manager')->__('FOLLOW GLOBAl CONFIGURATION'),
             1 => Mage::helper('manager')->__('OFF'),
             2 => Mage::helper('manager')->__('FATAL'),
             3 => Mage::helper('manager')->__('ERROR'),
