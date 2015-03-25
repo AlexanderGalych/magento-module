@@ -169,22 +169,11 @@ abstract class Symmetrics_Manager_Model_Callback_Function_Abstract
      */
     protected function _retrieveMessage()
     {
-//        /** @var AMQPMessage $amQpMsg */
-//        $amQpMsg = $this->_channel->basic_get($this->_queue);
-//        if (is_object($amQpMsg)) {
-//            $objectKey = 'delivery_info';
-//            $this->_channel->basic_ack($amQpMsg->$objectKey['delivery_tag']);
-//        }
-//        return $amQpMsg->body;
-
-        $callback = function($msg) {
-            return $msg->body;
-        };
-
-        $this->_channel->basic_consume($this->_queue, '', false, true, false, false, $callback);
-
-        while(count($this->_channel->callbacks)) {
-            $this->_channel->wait();
+        /** @var AMQPMessage $amQpMsg */
+        $amQpMsg = $this->_channel->basic_get($this->_queue);
+        if (is_object($amQpMsg)) {
+            $this->_channel->basic_qos(null, 1, null);
         }
+        return $amQpMsg->body;
     }
 }

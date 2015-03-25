@@ -50,7 +50,7 @@ class Symmetrics_Manager_Model_Callback_Function_Callback2
             try {
                 $message = $this->_retrieveMessage();
                 if ($message) {
-                    $this->getLogger()->logInfoMessage("Retrieved message: " . $message);
+                    $this->getLogger()->logInfoMessage("Retrieved message: " . $message, array('RMQ', 'RECEIVED'));
                 }
             } catch (PhpAmqpLib\Exception\AMQPProtocolException $e) {
                 $this->getLogger()->logFatalError($e, array('AMPQ', 'Connection'));

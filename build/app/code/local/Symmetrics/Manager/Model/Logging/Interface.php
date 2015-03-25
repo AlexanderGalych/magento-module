@@ -34,72 +34,321 @@
  */
 interface Symmetrics_Manager_Model_Logging_Interface
 {
-    public function logFatalError($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logFatalError($log, $tags);
 
-    public function logInfoMessage($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logInfoMessage($log, $tags);
 
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logGlobalLevel($log, $tags);
 
-    public function logGlobalLevel($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logGlobalStatus($log, $tags);
 
-    public function logGlobalStatus($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logGlobalError($log, $tags);
 
-    public function logGlobalError($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logGlobalWarning($log, $tags);
 
-    public function logGlobalWarning($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logGlobalInputData($log, $tags);
 
-    public function logGlobalInputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logGlobalOutputData($log, $tags);
 
-    public function logGlobalOutputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logIterationLevel($log, $tags);
 
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logIterationStatus($log, $tags);
 
-    public function logIterationLevel($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logIterationError($log, $tags);
 
-    public function logIterationStatus($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logIterationWarning($log, $tags);
 
-    public function logIterationError($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logIterationInputData($log, $tags);
 
-    public function logIterationWarning($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logIterationOutputData($log, $tags);
 
-    public function logIterationInputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxLevel($log, $tags);
 
-    public function logIterationOutputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxStatus($log, $tags);
 
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxError($log, $tags);
 
-    public function logBoxLevel($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxWarning($log, $tags);
 
-    public function logBoxStatus($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxInputData($log, $tags);
 
-    public function logBoxError($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxOutputData($log, $tags);
 
-    public function logBoxWarning($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxOperationLevel($log, $tags);
 
-    public function logBoxInputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxOperationStatus($log, $tags);
 
-    public function logBoxOutputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxOperationError($log, $tags);
 
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxOperationWarning($log, $tags);
 
-    public function logBoxOperationLevel($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * @return mixed
+     */
+    public function logBoxOperationInputData($log, $tags);
 
-    public function logBoxOperationStatus($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logBoxOperationOutputData($log, $tags);
 
-    public function logBoxOperationError($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logPostIterationLevel($log, $tags);
 
-    public function logBoxOperationWarning($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logPostIterationStatus($log, $tags);
 
-    public function logBoxOperationInputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logPostIterationError($log, $tags);
 
-    public function logBoxOperationOutputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * @return mixed
+     */
+    public function logPostIterationWarning($log, $tags);
 
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logPostIterationInputData($log, $tags);
 
-    public function logPostIterationLevel($log);
-
-    public function logPostIterationStatus($log);
-
-    public function logPostIterationError($log);
-
-    public function logPostIterationWarning($log);
-
-    public function logPostIterationInputData($log);
-
-    public function logPostIterationOutputData($log);
+    /**
+     *
+     *
+     * @param string $log Log string.
+     * @param array  $tags Array of log tags.
+     * 
+     * @return mixed
+     */
+    public function logPostIterationOutputData($log, $tags);
 }
