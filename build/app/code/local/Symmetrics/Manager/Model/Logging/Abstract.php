@@ -35,9 +35,19 @@
 abstract class Symmetrics_Manager_Model_Logging_Abstract
 {
     /**
-     * Path to log file.
+     * Path to log folder.
      */
-    const PATH_TO_LOG = '/workers/processor_%PID%_log.log';
+    const PATH_TO_LOG = '/workers/';
+
+    /**
+     * Log folder permissions.
+     */
+    const LOG_FOLDER_PERMISSIONS = 0777;
+
+    /**
+     * Log file.
+     */
+    const LOG_FILE = 'processor_%PID%_log.log';
 
     /**
      *
@@ -215,7 +225,11 @@ abstract class Symmetrics_Manager_Model_Logging_Abstract
     {
         $this->_workerPid = $params['pid'];
         $this->_logLevel = $params['log_level'];
-        $filePath = Mage::getBaseDir('var') . str_replace('%PID%', $this->_workerPid, self::PATH_TO_LOG);
+        $logFolder = Mage::getBaseDir('var') . self::PATH_TO_LOG;
+        if (!file_exists($logFolder)) {
+            mkdir($logFolder, self::LOG_FOLDER_PERMISSIONS, true);
+        }
+        $filePath = $logFolder . str_replace('%PID%', $this->_workerPid, self::LOG_FILE);
         $this->_logConnection = fopen($filePath, "w");
         if ($this->_logConnection) {
             $msg = 'Worker PID: ' . $this->_workerPid . " start \n";

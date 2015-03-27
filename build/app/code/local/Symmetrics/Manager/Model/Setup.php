@@ -32,7 +32,7 @@
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * @link      http://www.symmetrics.de/
  */
-class Symmetrics_Manager_Model_Setup extends Symmetrics_Setup_Model_Setup
+class Symmetrics_Manager_Model_Setup extends Mage_Catalog_Model_Resource_Eav_Mysql4_Setup
 {
     /**
      * Add category and all its children recursively.

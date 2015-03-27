@@ -101,35 +101,41 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
      */
     public function saveAction()
     {
-        /** @var $worker Symmetrics_Manager_Model_Worker */
-        $worker = $this->_initWorker();
-        $postData = $this->getRequest()->getPost();
-        if ($worker && $postData) {
-            try {
-                if (isset($postData['end_time']) && $postData['end_time']) {
-                    $format = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
-                    $postData['end_time'] = (string) Mage::app()->getLocale()
-                        ->utcDate(Mage::app()->getStore(), $postData['end_time'], true, $format);
+        $workersNumber = $this->getRequest()->getParam('number_of_workers', 1);
+        try {
+            while ($workersNumber--) {
+                /** @var $worker Symmetrics_Manager_Model_Worker */
+                $worker = $this->_initWorker();
+                $postData = $this->getRequest()->getPost();
+                if ($worker && $postData) {
+                    if (isset($postData['end_time']) && $postData['end_time']) {
+                        $format = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
+                        $postData['end_time'] = (string)Mage::app()->getLocale()
+                            ->utcDate(Mage::app()->getStore(), $postData['end_time'], true, $format);
+                    }
+                    $worker->addData($postData);
+                    if ($workersNumber) {
+                        $worker->setDescription($worker->getDescription() . ' - ' . $workersNumber);
+                    }
+                    $worker->save();
+                    $this->_getSession()->addSuccess(
+                        Mage::helper('manager')->__(sprintf('The worker #%d has been saved.', $worker->getId()))
+                    );
+
+                } else {
+                    $this->_getSession()->addError(
+                        Mage::helper('manager')->__('Cannot initialize the worker process.')
+                    );
                 }
-                $worker->addData($postData);
-                $worker->save();
-                $this->_getSession()->addSuccess(
-                    Mage::helper('manager')->__('The worker has been saved.')
-                );
-            } catch (Mage_Core_Exception $e) {
-                $this->_getSession()->addError($e->getMessage());
-            } catch (Exception $e) {
-                $this->_getSession()->addException(
-                    $e, Mage::helper('manager')->__('There was a problem with saving worker.')
-                );
             }
-            $this->_redirect('*/*/list');
-        } else {
-            $this->_getSession()->addError(
-                Mage::helper('manager')->__('Cannot initialize the worker process.')
+        } catch (Mage_Core_Exception $e) {
+            $this->_getSession()->addError($e->getMessage());
+        } catch (Exception $e) {
+            $this->_getSession()->addException(
+                $e, Mage::helper('manager')->__('There was a problem with saving worker.')
             );
-            $this->_redirect('*/*/list');
         }
+        $this->_redirect('*/*/list');
     }
 
     /**

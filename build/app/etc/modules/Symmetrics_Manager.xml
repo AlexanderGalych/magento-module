@@ -6,7 +6,6 @@
             <depends>
                 <Mage_Core/>
                 <Mage_Widget/>
-                <Symmetrics_Setup/>
             </depends>
         </Symmetrics_Manager>
     </modules>

@@ -98,11 +98,24 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
         $fieldSet->addField(
             'log_level', 'select',
             array(
-                'label' => Mage::helper('manager')->__('Status'),
-                'title' => Mage::helper('manager')->__('Status'),
+                'label' => Mage::helper('manager')->__('Log Level'),
+                'title' => Mage::helper('manager')->__('Log Level'),
                 'name'  => 'log_level',
                 'value' => $model->getLogLevel(),
                 'values'=> Mage::helper('manager')->getLogLevels()
+            )
+        );
+
+        $fieldSet->addField(
+            'is_use_end_time', 'checkbox',
+            array(
+                'label' => Mage::helper('manager')->__('Use Stop Date'),
+                'title' => Mage::helper('manager')->__('Use Stop Date'),
+                'name'  => 'is_use_end_time',
+                'checked' => false,
+                'onchange' => 'document.getElementById(\'manage_worker_end_time\').disabled = !this.checked',
+                'value'  => '1',
+                'align' => 'center',
             )
         );
 
@@ -117,8 +130,23 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
                 'format' => $dateFormat,
                 'image' => $this->getSkinUrl('images/grid-cal.gif'),
                 'time' => true,
+                'after_element_html' =>
+                    '<script>document.getElementById(\'manage_worker_end_time\').disabled = true;</script>'
             )
         );
+
+        if (is_null($model->getEntityId())) {
+            $fieldSet->addField(
+                'number_of_workers', 'select',
+                array(
+                    'label' => Mage::helper('manager')->__('Number of workers'),
+                    'title' => Mage::helper('manager')->__('Number of workers'),
+                    'name'  => 'number_of_workers',
+                    'value' =>1,
+                    'values'=> Mage::helper('manager')->getArrayOfWorkersNumber(),
+                )
+            );
+        }
 
         $this->setForm($form);
         return parent::_prepareForm();

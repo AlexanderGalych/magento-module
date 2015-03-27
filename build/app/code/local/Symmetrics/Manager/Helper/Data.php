@@ -69,4 +69,14 @@ class Symmetrics_Manager_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return Mage::getSingleton('manager/system_config_source_loglevel')->toArray();
     }
+
+    /**
+     * Array of available numbers of workers on add worker form.
+     *
+     * @return array
+     */
+    public function getArrayOfWorkersNumber()
+    {
+        return array_slice(range(0, 100), 1, null, true);
+    }
 }

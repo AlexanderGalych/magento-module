@@ -119,8 +119,8 @@ if (!$installer->getConnection()
         Varien_Db_Ddl_Table::TYPE_TIMESTAMP,
         null,
         array(
-            'nullable' => false,
-            'default' => Varien_Db_Ddl_Table::TIMESTAMP_INIT,
+            'nullable' => true,
+            'default' => 0,
         ),
         'Date Finished'
     );
@@ -130,6 +130,7 @@ if (!$installer->getConnection()
         null,
         array(
             'nullable' => true,
+            'default' => 0,
         ),
         'Kill date'
     );
