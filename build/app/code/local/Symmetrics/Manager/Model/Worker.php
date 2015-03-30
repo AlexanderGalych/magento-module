@@ -77,7 +77,9 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
     /**
      * Path to callback functions.
      */
-    const WORKER_PATH = 'php %PATH%/shell/worker_manager/worker.php --callback = %CALLBACK% --loglevel = %LOG_LEVEL% > /dev/null 2>/dev/null &  echo $!';
+    const WORKER_PATH = 'php %PATH%/shell/worker_manager/worker.php %PARAMS% > /dev/null 2>/dev/null &  echo $!';
+
+    const WORKER_PATH_PARAMS = '--worker_id = %ID% --callback = %CALLBACK% --loglevel = %LOG_LEVEL%';
 
     /**
      * Prefix of model events names.
@@ -165,9 +167,14 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function addWorker()
     {
+        $params = str_replace(
+            array('%ID%', '%CALLBACK%', '%LOG_LEVEL%'),
+            array($this->getId(), $this->getCallback(), $this->_getWorkerLogLevel()),
+            self::WORKER_PATH_PARAMS
+        );
         $path = str_replace(
-            array('%PATH%', '%CALLBACK%', '%LOG_LEVEL%'),
-            array(Mage::getBaseDir(), $this->getCallback(), $this->_getWorkerLogLevel()),
+            array('%PATH%', '%PARAMS%'),
+            array(Mage::getBaseDir(), $params),
             self::WORKER_PATH
         );
         $this->setPid(exec($path));
@@ -304,13 +311,27 @@ class Symmetrics_Manager_Model_Worker extends Mage_Core_Model_Abstract
      */
     public function manageWorkerState()
     {
-        if ($this->getStatus() == self::STATUS_RUNNING) {
-            $shouldDieNow = strtotime($this->getEndTime()) < strtotime($this->_getGmtDate());
-            if ($this->getEndTime() && $shouldDieNow) {
-                $this->setWorkerStatus(self::STATUS_STOPPED);
-            } elseif (!$this->checkWorkerIsRunning()) {
-                $this->setWorkerStatus(self::STATUS_FINISHED);
-            }
+        switch ($this->getStatus()) {
+            case self::STATUS_RUNNING :
+                $shouldDieNow = strtotime($this->getEndTime()) < strtotime($this->_getGmtDate());
+                if ($this->getEndTime() && $shouldDieNow) {
+                    $this->setWorkerStatus(self::STATUS_STOPPED);
+                } elseif (!$this->checkWorkerIsRunning()) {
+                    $this->setWorkerStatus(self::STATUS_FINISHED);
+                }
+                break;
+            case self::STATUS_CREATED :
+            case self::STATUS_FINISHED :
+            case self::STATUS_WAITING :
+                /** @var Mage_Cron_Model_Schedule $cron */
+                $cron = Mage::getSingleton('cron/schedule');
+                $cron->setCronExpr($this->getCronExpr());
+                if ($cron->trySchedule($this->_getGmtDate())) {
+                    $this->setWorkerStatus(self::STATUS_RUNNING);
+                }
+                break;
+            default:
+                break;
         }
     }
 }

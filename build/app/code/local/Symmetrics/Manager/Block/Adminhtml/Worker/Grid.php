@@ -96,7 +96,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         $this->addColumn(
             'entry_id', array(
                 'header' => Mage::helper('manager')->__('Worker Id'),
-                'width' => '180',
+                'width' => '20',
                 'align' => 'left',
                 'index' => 'entry_id',
                 'sortable' => true,
@@ -105,7 +105,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
             'pid', array(
                 'header' => Mage::helper('manager')->__('Process Id'),
                 'sortable' => true,
-                'width' => '120',
+                'width' => '20',
                 'align' => 'left',
                 'index' => 'pid',
             )
@@ -134,7 +134,6 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
         )->addColumn(
             'status', array(
                 'header' => Mage::helper('manager')->__('Status'),
-                'width' => '120',
                 'align' => 'left',
                 'index' => 'status',
                 'type' => 'options',
@@ -142,11 +141,18 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'frame_callback' => array($this, 'decorateStatus')
             )
         )->addColumn(
+            'cron_expr', array(
+                'header' => Mage::helper('manager')->__('Cron Expression'),
+                'width' => '120',
+                'align' => 'left',
+                'index' => 'cron_expr',
+            )
+        )->addColumn(
             'creation_time', array(
                 'header' => Mage::helper('manager')->__('Created At'),
                 'type' => 'datetime',
                 'time' => 'true',
-                'width' => '180',
+                'width' => '150',
                 'align' => 'left',
                 'index' => 'creation_time',
                 'frame_callback' => array($this, 'decorateDate')
@@ -156,7 +162,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'header' => Mage::helper('manager')->__('Finished At'),
                 'type' => 'datetime',
                 'time' => 'true',
-                'width' => '180',
+                'width' => '150',
                 'align' => 'left',
                 'index' => 'finished_time',
                 'frame_callback' => array($this, 'decorateDate')
@@ -166,7 +172,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 'header' => Mage::helper('manager')->__('End Date'),
                 'type' => 'datetime',
                 'time' => 'true',
-                'width' => '180',
+                'width' => '150',
                 'align' => 'left',
                 'index' => 'end_time',
                 'frame_callback' => array($this, 'decorateDate')
@@ -211,7 +217,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 $value = Mage::helper('manager')->__('Finished');
                 break;
             case Symmetrics_Manager_Model_Worker::STATUS_CREATED :
-                $class = 'grid-severity-notice';
+                $class = 'grid-severity-major';
                 $value = Mage::helper('manager')->__('Created');
                 break;
             case Symmetrics_Manager_Model_Worker::STATUS_RUNNING :
@@ -223,7 +229,7 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
                 $value = Mage::helper('manager')->__('Stopped');
                 break;
             case Symmetrics_Manager_Model_Worker::STATUS_WAITING :
-                $class = 'grid-severity-critical';
+                $class = 'grid-severity-major';
                 $value = Mage::helper('manager')->__('Waiting');
                 break;
         }
@@ -275,13 +281,19 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Grid extends Mage_Adminhtml_Bloc
             )
         );
         $this->getMassactionBlock()->addItem(
+            'waiting', array(
+                'label'    => Mage::helper('index')->__('Waiting'),
+                'url'      => $this->getUrl('*/*/massWaiting'),
+                'selected' => false,
+            )
+        );
+        $this->getMassactionBlock()->addItem(
             'stop', array(
                 'label'    => Mage::helper('index')->__('Stop'),
                 'url'      => $this->getUrl('*/*/massStop'),
                 'selected' => false,
             )
         );
-
         $this->getMassactionBlock()->addItem(
             'remove', array(
                 'label'    => Mage::helper('index')->__('Remove'),

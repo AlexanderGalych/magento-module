@@ -47,7 +47,7 @@ abstract class Symmetrics_Manager_Model_Logging_Abstract
     /**
      * Log file.
      */
-    const LOG_FILE = 'processor_%PID%_log.log';
+    const LOG_FILE = 'processor_%WID%_log.log';
 
     /**
      *
@@ -180,6 +180,13 @@ abstract class Symmetrics_Manager_Model_Logging_Abstract
     protected $_logConnection = null;
 
     /**
+     * Worker ID.
+     *
+     * @var int|null
+     */
+    protected $_workerId = null;
+
+    /**
      * Worker PID.
      *
      * @var int|null
@@ -223,16 +230,17 @@ abstract class Symmetrics_Manager_Model_Logging_Abstract
      */
     public function __construct(array $params)
     {
+        $this->_workerId = $params['worker_id'];
         $this->_workerPid = $params['pid'];
         $this->_logLevel = $params['log_level'];
         $logFolder = Mage::getBaseDir('var') . self::PATH_TO_LOG;
         if (!file_exists($logFolder)) {
             mkdir($logFolder, self::LOG_FOLDER_PERMISSIONS, true);
         }
-        $filePath = $logFolder . str_replace('%PID%', $this->_workerPid, self::LOG_FILE);
+        $filePath = $logFolder . str_replace('%WID%', $this->_workerId, self::LOG_FILE);
         $this->_logConnection = fopen($filePath, "w");
         if ($this->_logConnection) {
-            $msg = 'Worker PID: ' . $this->_workerPid . " start \n";
+            $msg = 'Worker PID: ' . $this->_workerPid . ' & ID: ' . $this->_workerId . " start \n";
             $this->_writeLog($msg, array('CONSTRUCT'), self::GLOBAL_LOG_PREFIX);
         }
     }
@@ -286,7 +294,9 @@ abstract class Symmetrics_Manager_Model_Logging_Abstract
     protected function _prepareLogString($log, $tags, $section, $nextLine)
     {
         $logPrefix = $this->_getDate() . $this->_logBlockSeparator . $section . $this->_logBlockSeparator;
-        $logPrefix .= (!empty($tags) ? join($this->_logTagsSeparator, $tags) : 'NO TAGS') . $this->_logBlockSeparator;
+
+        array_unshift($tags, $this->_workerId, $this->_workerPid);
+        $logPrefix .= join($this->_logTagsSeparator, $tags) . $this->_logBlockSeparator;
         $logSuffix = ($nextLine) ? PHP_EOL : "";
         return $logPrefix . $log . $logSuffix;
     }

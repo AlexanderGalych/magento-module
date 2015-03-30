@@ -3,10 +3,6 @@
         <Symmetrics_Manager>
             <active>true</active>
             <codePool>local</codePool>
-            <depends>
-                <Mage_Core/>
-                <Mage_Widget/>
-            </depends>
         </Symmetrics_Manager>
     </modules>
 </config>

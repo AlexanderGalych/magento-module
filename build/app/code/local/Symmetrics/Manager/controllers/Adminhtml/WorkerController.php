@@ -186,27 +186,17 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
      */
     public function massStartAction()
     {
-        /* @var $worker Symmetrics_Manager_Model_Worker */
-        $worker    = Mage::getSingleton('manager/worker');
-        $workerIds = $this->getRequest()->getParam('worker');
-        if (empty($workerIds) || !is_array($workerIds)) {
-            $this->_getSession()->addError(Mage::helper('manager')->__('Please select Workers'));
-        } else {
-            try {
-                $counter = $worker->setWorkerStatusByIds(Symmetrics_Manager_Model_Worker::STATUS_RUNNING, $workerIds);
-                $this->_getSession()->addSuccess(
-                    Mage::helper('manager')->__('Total of %d worker(es) have update status.', $counter)
-                );
-            } catch (Mage_Core_Exception $e) {
-                $this->_getSession()->addError($e->getMessage());
-            } catch (Exception $e) {
-                $this->_getSession()->addException(
-                    $e, Mage::helper('manager')->__('Cannot initialize the worker process.')
-                );
-            }
-        }
+        $this->_setMassActionWorkersStatus(Symmetrics_Manager_Model_Worker::STATUS_RUNNING);
+    }
 
-        $this->_redirect('*/*/list');
+    /**
+     * Set waiting status selected workers.
+     *
+     * @return void
+     */
+    public function massWaitingAction()
+    {
+        $this->_setMassActionWorkersStatus(Symmetrics_Manager_Model_Worker::STATUS_WAITING);
     }
 
     /**
@@ -216,26 +206,7 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
      */
     public function massStopAction()
     {
-        /* @var $worker Symmetrics_Manager_Model_Worker */
-        $worker    = Mage::getSingleton('manager/worker');
-        $workerIds = $this->getRequest()->getParam('worker');
-        if (empty($workerIds) || !is_array($workerIds)) {
-            $this->_getSession()->addError(Mage::helper('manager')->__('Please select Workers'));
-        } else {
-            try {
-                $counter = $worker->setWorkerStatusByIds(Symmetrics_Manager_Model_Worker::STATUS_STOPPED, $workerIds);
-                $this->_getSession()->addSuccess(
-                    Mage::helper('manager')->__('Total of %d worker(es) have update status.', $counter)
-                );
-            } catch (Mage_Core_Exception $e) {
-                $this->_getSession()->addError($e->getMessage());
-            } catch (Exception $e) {
-                $this->_getSession()->addException(
-                    $e, Mage::helper('manager')->__('Cannot initialize the worker process.')
-                );
-            }
-        }
-        $this->_redirect('*/*/list');
+        $this->_setMassActionWorkersStatus(Symmetrics_Manager_Model_Worker::STATUS_STOPPED);
     }
 
     /**
@@ -255,6 +226,37 @@ class Symmetrics_Manager_Adminhtml_WorkerController extends Mage_Adminhtml_Contr
                 $counter = $worker->removeWorkersByIds($workerIds);
                 $this->_getSession()->addSuccess(
                     Mage::helper('manager')->__('Total of %d worker(es) were removed.', $counter)
+                );
+            } catch (Mage_Core_Exception $e) {
+                $this->_getSession()->addError($e->getMessage());
+            } catch (Exception $e) {
+                $this->_getSession()->addException(
+                    $e, Mage::helper('manager')->__('Cannot initialize the worker process.')
+                );
+            }
+        }
+        $this->_redirect('*/*/list');
+    }
+
+    /**
+     * Set workers status by mass-action.
+     *
+     * @param int $status Worker status.
+     *
+     * @return void
+     */
+    protected function _setMassActionWorkersStatus($status)
+    {
+        /* @var $worker Symmetrics_Manager_Model_Worker */
+        $worker = Mage::getSingleton('manager/worker');
+        $workerIds = $this->getRequest()->getParam('worker');
+        if (empty($workerIds) || !is_array($workerIds)) {
+            $this->_getSession()->addError(Mage::helper('manager')->__('Please select Workers'));
+        } else {
+            try {
+                $counter = $worker->setWorkerStatusByIds($status, $workerIds);
+                $this->_getSession()->addSuccess(
+                    Mage::helper('manager')->__('Total of %d worker(es) have update status.', $counter)
                 );
             } catch (Mage_Core_Exception $e) {
                 $this->_getSession()->addError($e->getMessage());

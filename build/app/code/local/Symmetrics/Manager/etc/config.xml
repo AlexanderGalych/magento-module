@@ -37,7 +37,7 @@
 <config>
     <modules>
         <Symmetrics_Manager>
-            <version>0.0.3</version>
+            <version>0.0.5</version>
         </Symmetrics_Manager>
     </modules>
     <global>

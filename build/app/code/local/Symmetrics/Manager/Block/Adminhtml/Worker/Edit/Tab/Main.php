@@ -96,6 +96,16 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
         );
 
         $fieldSet->addField(
+            'cron_expr', 'text',
+            array(
+                'label' => Mage::helper('manager')->__('Cron Expression'),
+                'title' => Mage::helper('manager')->__('Cron Expression'),
+                'name'  => 'cron_expr',
+                'value' => $model->getCronExpr(),
+            )
+        );
+
+        $fieldSet->addField(
             'log_level', 'select',
             array(
                 'label' => Mage::helper('manager')->__('Log Level'),
@@ -147,6 +157,8 @@ class Symmetrics_Manager_Block_Adminhtml_Worker_Edit_Tab_Main
                 )
             );
         }
+
+//        Mage::getModel('manager/observer')->manageWorkersScripts();
 
         $this->setForm($form);
         return parent::_prepareForm();

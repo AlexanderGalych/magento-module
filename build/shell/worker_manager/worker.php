@@ -50,11 +50,22 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
     protected $_logLevel = null;
 
     /**
+     * Worker PID.
+     *
+     * @var int|null
+     */
+    protected $_workerId = null;
+
+    /**
      * Constructor for the shell script. Initialize arguments and basic variables.
      */
     public function __construct()
     {
         parent::__construct();
+
+        if ($this->getArg('worker_id')) {
+            $this->_workerId = (int) $this->getArg('worker_id');
+        }
 
         if ($this->getArg('loglevel')) {
             $this->_logLevel = (int) $this->getArg('loglevel');
@@ -78,7 +89,7 @@ class Symmetrics_Manager_Worker extends Mage_Shell_Abstract
         $path = Symmetrics_Manager_Model_Callback_Base::XML_PATH_CALLBACK_FUNCTIONS . '/' . $this->_callbackXmlPath;
         $model = $this->_factory->getConfig()->getNode($path);
         if ($model) {
-            $params = array('pid' => getmypid(), 'log_level' => $this->_logLevel);
+            $params = array('worker_id' => $this->_workerId, 'pid' => getmypid(), 'log_level' => $this->_logLevel);
             $logger = $this->_factory->getModel('manager/logging_logger', $params);
             return $this->_factory->getModel($model, $logger);
         }
